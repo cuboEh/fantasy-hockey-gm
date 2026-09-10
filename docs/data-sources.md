@@ -38,6 +38,40 @@ season completeness and player identity against another source. MoneyPuck's
 positions are not automatically Yahoo eligibility. These are historical inputs,
 not next-season projections, and cannot alone supply every required scoring stat.
 
+## NHL statistics discovery
+
+Follow-up September 10: the [NHL statistics site](https://www.nhl.com/stats/)
+provides the official reference. The public JSON
+[report configuration](https://api.nhle.com/stats/rest/en/config) was inspected,
+followed by three limited, one-row report requests for the regular season with
+`seasonId=20252026` and `gameTypeId=2`. No bulk statistics were downloaded or saved.
+
+Base URL: `https://api.nhle.com/stats/rest/en/`
+
+| Report | Scoring fields observed in a returned sample row |
+| --- | --- |
+| `skater/summary` | `goals`, `assists`, `plusMinus`, `ppPoints`, `shots` |
+| `skater/realtime` | `hits` |
+| `goalie/summary` | `wins`, `goalsAgainst`, `saves`, `shutouts` |
+
+All samples include `playerId` and `seasonId`. Requests used `isAggregate=false`,
+`isGame=false`, `start=0`, `limit=1`, and the season/game-type filter above.
+Summary and realtime reports returned different first players: joining by row
+order would be wrong. The report name `realtime` is not a measured freshness SLA.
+
+Classification: first-party public web-data endpoints, not a verified supported
+third-party developer API. Technical reachability and field names are verified;
+bulk reuse permission, stability, full coverage and freshness are not. NHL terms
+restrict unauthorized automated collection. [Terms](https://www.nhl.com/info/terms-of-service)
+
+An offline normalizer can use this schema while the acquisition route is settled.
+If authorized direct retrieval is unavailable, use a permitted export or licensed
+provider offering these fields. Do not label accessibility as permission.
+
+The samples establish a promising route to all required raw scoring fields.
+They do not establish Yahoo-specific eligibility or official fantasy corrections,
+and no NHL adapter or complete season import has been implemented yet.
+
 ## Hashtag Hockey
 
 The [projection page](https://hashtaghockey.com/fantasy-hockey-projections)
@@ -57,3 +91,8 @@ once its full field coverage is verified. MoneyPuck can supply supporting
 historical features. If a baseline model is built instead, label its assumptions,
 obtain missing scoring inputs and validate out of sample. Missing values must
 remain explicit; zero-fill would distort player comparisons.
+
+The user prefers a multi-source approach: recorded NHL production, MoneyPuck
+analytical features and our own tested fantasy model. An external projection
+export is an optional baseline or blend component, not a required architecture.
+See [model design](model-design.md).
