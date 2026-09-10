@@ -1,0 +1,25 @@
+# Fictional demonstration rules, not a league recommendation.
+[league]
+scoring_type = "h2h_points"
+
+[roster]
+C = 1
+LW = 1
+RW = 1
+D = 2
+G = 1
+BN = 2
+
+[scoring.skater]
+goals = 5
+assists = 3
+plus_minus = 1
+power_play_points = 1
+shots_on_goal = 0.5
+hits = 0.25
+
+[scoring.goalie]
+wins = 4
+goals_against = -2
+saves = 0.2
+shutouts = 3

@@ -1,0 +1,1 @@
+"""Local fantasy hockey analysis."""

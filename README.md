@@ -4,7 +4,9 @@ A private, non-commercial fantasy hockey analytics tool being planned by an indi
 
 ## Project status
 
-Planning stage. Yahoo Fantasy Sports API access has not yet been approved. This public repository describes the proposed project for the access application; there is no deployed service or implementation here.
+Early local development. The developer submitted a Yahoo Fantasy Sports API access application on September 10, 2026; approval is pending. There is no deployed service or Yahoo connection.
+
+The first implemented slice is an offline scoring CLI with explicit per-stat contributions and input provenance. See [development instructions](docs/development.md) and [data-source investigation](docs/data-sources.md). Projections, real-player rankings and draft tracking are next steps.
 
 ## Intended use
 

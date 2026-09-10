@@ -1,0 +1,8 @@
+{
+  "kind": "goalie",
+  "basis": "total",
+  "data_type": "illustrative",
+  "source": "Synthetic example, not a real player or forecast",
+  "horizon": "One fictional game",
+  "stats": {"wins": 1, "goals_against": 3, "saves": 30, "shutouts": 0}
+}
