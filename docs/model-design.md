@@ -1,8 +1,9 @@
 # Multi-source fantasy model
 
 Updated September 10, 2026. The scorer and explicit skater role projector are
-implemented. Feature estimation, model training and real-player rankings remain
-future work. The full design below is the target, not a claim of validated accuracy.
+implemented, alongside a historical-rate board and manual draft tracker. Model
+training and validated strategic rankings remain future work. The full design
+below is the target, not a claim of validated accuracy.
 
 ## Agreed inclusion and implementation status
 
@@ -14,12 +15,12 @@ before becoming fitted default adjustments.
 | Layer | Metrics and responsibility | Current status |
 | --- | --- | --- |
 | Scoring | Exact league weights, additive contributions, missing-stat validation | Implemented |
-| Opportunity | Appearances, PP/non-PP minutes and role scenarios | Explicit skater scenarios implemented; estimation from data pending |
-| Production | Situation-specific per-60 rates and power-play production | Scenario conversion implemented; historical baseline fitting pending |
+| Opportunity | Appearances, PP/non-PP minutes and role scenarios | Explicit skater scenarios and historical GP carry-forward implemented; workload forecasting pending |
+| Production | Situation-specific per-60 rates and power-play production | Scenario conversion and weighted historical-rate baseline implemented; predictive fitting pending |
 | Context | Trades, role competition, injuries, linemates and age | Can be documented as scenario rationale; no automated inference |
-| Analytical features | MoneyPuck xG, finishing, assist composition and goalie context | Candidate features; not fitted or validated |
+| Analytical features | MoneyPuck xG, finishing, assist composition and goalie context | MoneyPuck annotations attached with identity/conflict checks; not fitted or validated |
 | Uncertainty | Scenario probabilities, source dates, review warnings | Implemented for supplied scenarios; no calibrated outcome intervals |
-| Draft decisions | Replacement value, positional flexibility, ADP and next-pick availability | Planned |
+| Draft decisions | Replacement value, positional flexibility, ADP and next-pick availability | Manual snake tracker and positional matching implemented; replacement value and ADP strategy pending |
 | Roster decisions | Usable games, acquisition budgets, goalie minimums and correlations | Planned |
 | Research | Tracking data, venue effects and additional signals | Deferred until access and out-of-sample value are established |
 

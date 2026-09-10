@@ -6,7 +6,11 @@ A private, non-commercial fantasy hockey analytics tool being planned by an indi
 
 Early local development. The developer submitted a Yahoo Fantasy Sports API access application on September 10, 2026; approval is pending. There is no deployed service or Yahoo connection.
 
-The local foundation includes offline points scoring and explicit skater role/usage scenarios, with contribution breakdowns and input provenance. See [development instructions](docs/development.md), [data-source investigation](docs/data-sources.md), and [model design](docs/model-design.md). Learning projections from player data, real-player rankings and draft tracking are next steps.
+The local implementation includes league-specific scoring, explicit skater role scenarios, a real-player historical baseline board, CSV export, and a manual SQLite snake-draft tracker. The baseline is provisional: workloads, rookies and Yahoo eligibility need review. It is not a validated draft strategy.
+
+Start with the [draft-day guide](docs/draft-day.md). See the [broad source survey](docs/source-survey.md), [development instructions](docs/development.md), [data-source investigation](docs/data-sources.md), and [model design](docs/model-design.md).
+
+Next priorities are verified eligibility, documented workload and role adjustments, rookie coverage, and position-specific replacement value. A permitted independent projection export would provide a useful comparison. Team count and draft slot remain to be confirmed. Yahoo approval is not required for the offline board and tracker.
 
 ## Intended use
 

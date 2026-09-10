@@ -1,7 +1,16 @@
 # Data-source investigation
 
 Checked September 10, 2026. Downloadable historical data and forward projections
-are different inputs. No real-player forecast or complete ranking is implemented.
+are different inputs. A provisional historical baseline is now implemented;
+it is not a complete or validated forecast. See the [expanded survey](source-survey.md).
+
+## Hockey Insights
+
+The [open-data catalogue](https://hockeyinsights.ca/opendata/) explicitly offers
+reusable JSON. The adapter consumes historical counting lines and preserves source
+flags, then applies local scoring. It does not consume vendor fantasy scores or
+consensus ranks. This independent derived dataset supplies the initial baseline;
+source conflicts, incomplete player coverage and estimated fields remain visible.
 
 ## Yahoo Fantasy
 

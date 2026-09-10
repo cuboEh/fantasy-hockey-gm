@@ -1,10 +1,9 @@
 # Draft preparation development
 
-The local foundation includes an offline scoring calculator and a skater role
-scenario projector. They convert explicit inputs into fantasy points with
-contribution breakdowns and input hashes. They do not estimate rates from real
-player data, rank real players, optimize lineups, enforce transaction rules, or
-track a draft yet.
+The local implementation includes offline scoring, explicit skater role scenarios,
+a historical-rate player board, CSV export and persistent manual draft tracking.
+See [draft-day instructions](draft-day.md) for real-player commands and limitations.
+There is no fitted forecast, lineup optimizer or automated Yahoo integration.
 
 ## Run
 
@@ -62,14 +61,13 @@ needed for this slice.
 
 ## Next slices
 
-1. Select a permitted projection source and verify all scored fields, season,
-   units, identities, and Yahoo position eligibility. Preserve provenance.
-2. Score normalized projections with coverage flags and export a ranked table.
-3. Add position-specific replacement estimates and configurable league size.
-4. Add manual draft tracking, persistent state, pick correction and candidate
-   explanations. Keep provider IDs distinct from internal player IDs.
-5. Rehearse a draft and export a static fallback before the actual draft.
+1. Verify Yahoo eligibility and current workload/role assumptions; review source conflicts.
+2. Add separately sourced rookie projections and compare a permitted independent export.
+3. Add position-specific replacement estimates, keeping league size configurable.
+4. Evaluate strategies with historical information cutoffs, avoiding future leakage.
+5. Confirm final team count and slot, then rehearse the reviewed board and export a fallback.
 
-Use SQLite when draft state and player records are introduced. No database is
-needed to score an isolated stat line. Future weekly analysis should value usable
-lineup opportunities; total season projections alone are not a draft strategy.
+SQLite stores the frozen board, picks and correction audit. The baseline currently
+ranks season points among players who fit available roster slots. Replacement
+value, ADP and next-pick availability are not implemented. Future weekly analysis
+must value usable lineup opportunities, not simply season totals.

@@ -6,10 +6,12 @@ import hashlib
 import json
 from pathlib import Path
 import sys
+import sqlite3
 
 from .config import load_config
 from .scoring import score
 from .projections import project_payload
+from . import draft_cli
 
 
 def unique_object(pairs: list[tuple[str, object]]) -> dict[str, object]:
@@ -30,8 +32,11 @@ def main() -> int:
     roles = commands.add_parser("project-roles", help="Compare explicit skater usage scenarios")
     roles.add_argument("--config", type=Path, required=True)
     roles.add_argument("--input", type=Path, required=True)
+    draft_cli.register(commands)
     args = parser.parse_args()
     try:
+        if args.command in ("build-board", "draft"):
+            return draft_cli.handle(args)
         config = load_config(args.config)
         raw = args.input.read_bytes()
         payload = json.loads(raw, parse_float=Decimal, object_pairs_hook=unique_object)
@@ -69,7 +74,7 @@ def main() -> int:
             "scoring_version": "0.1.0",
         })
         print(json.dumps(output, indent=2, sort_keys=True))
-    except (OSError, ValueError) as exc:
+    except (OSError, ValueError, sqlite3.Error) as exc:
         print(f"fantasy: {exc}", file=sys.stderr)
         return 2
     return 0
