@@ -6,7 +6,7 @@ A private, non-commercial fantasy hockey analytics tool being planned by an indi
 
 Early local development. The developer submitted a Yahoo Fantasy Sports API access application on September 10, 2026; approval is pending. There is no deployed service or Yahoo connection.
 
-The first implemented slice is an offline scoring CLI with explicit per-stat contributions and input provenance. See [development instructions](docs/development.md) and [data-source investigation](docs/data-sources.md). Projections, real-player rankings and draft tracking are next steps.
+The local foundation includes offline points scoring and explicit skater role/usage scenarios, with contribution breakdowns and input provenance. See [development instructions](docs/development.md), [data-source investigation](docs/data-sources.md), and [model design](docs/model-design.md). Learning projections from player data, real-player rankings and draft tracking are next steps.
 
 ## Intended use
 

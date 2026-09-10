@@ -1,6 +1,37 @@
 # Multi-source fantasy model
 
-Proposed September 10, 2026. This is the next model design, not a trained model.
+Updated September 10, 2026. The scorer and explicit skater role projector are
+implemented. Feature estimation, model training and real-player rankings remain
+future work. The full design below is the target, not a claim of validated accuracy.
+
+## Agreed inclusion and implementation status
+
+The user endorsed the proposed metrics and wants a thorough model tailored to
+their league. Include them through distinct forecasting, uncertainty and decision
+layers. Candidate features require evidence of incremental predictive usefulness
+before becoming fitted default adjustments.
+
+| Layer | Metrics and responsibility | Current status |
+| --- | --- | --- |
+| Scoring | Exact league weights, additive contributions, missing-stat validation | Implemented |
+| Opportunity | Appearances, PP/non-PP minutes and role scenarios | Explicit skater scenarios implemented; estimation from data pending |
+| Production | Situation-specific per-60 rates and power-play production | Scenario conversion implemented; historical baseline fitting pending |
+| Context | Trades, role competition, injuries, linemates and age | Can be documented as scenario rationale; no automated inference |
+| Analytical features | MoneyPuck xG, finishing, assist composition and goalie context | Candidate features; not fitted or validated |
+| Uncertainty | Scenario probabilities, source dates, review warnings | Implemented for supplied scenarios; no calibrated outcome intervals |
+| Draft decisions | Replacement value, positional flexibility, ADP and next-pick availability | Planned |
+| Roster decisions | Usable games, acquisition budgets, goalie minimums and correlations | Planned |
+| Research | Tracking data, venue effects and additional signals | Deferred until access and out-of-sample value are established |
+
+ADP changes when to draft a player, not their estimated scoring ability. Injury
+and rest scenarios change expected exposure, not an unexplained penalty added
+after scoring. Multi-position flexibility changes feasible roster assignments.
+MoneyPuck features influence projected stats; they do not earn fantasy points.
+
+Every real-player recommendation should ultimately show its baseline, supported
+adjustments, horizon, roster opportunity, uncertainty, source freshness and reason
+for selection over alternatives. The definition of thorough is complete decision
+coverage and testability, not the largest possible number of features.
 
 ## Source responsibilities
 

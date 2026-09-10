@@ -1,9 +1,10 @@
 # Draft preparation development
 
-The first local slice is an offline scoring calculator. It converts a normalized
-stat line into fantasy points with a contribution breakdown and input hashes.
-It does not produce projections, rank real players, optimize lineups, enforce
-transaction rules, or track a draft yet.
+The local foundation includes an offline scoring calculator and a skater role
+scenario projector. They convert explicit inputs into fantasy points with
+contribution breakdowns and input hashes. They do not estimate rates from real
+player data, rank real players, optimize lineups, enforce transaction rules, or
+track a draft yet.
 
 ## Run
 
@@ -13,6 +14,7 @@ Python 3.11 or newer and uv:
 uv sync --locked
 uv run fantasy score --config config.example.toml --input examples/skater.json
 uv run fantasy score --config config.example.toml --input examples/goalie.json
+uv run fantasy project-roles --config config.example.toml --input examples/roles.json
 uv run python -m unittest discover -s tests -v
 ```
 
@@ -26,7 +28,33 @@ Each input declares `basis` (`total` or `per_game`), `data_type` (`historical`,
 `projection`, or `illustrative`), `source`, `horizon`, `kind`, and `stats`.
 All statistics in one input must share its declared basis and horizon. The scorer
 does not infer per-game rates or multiply by appearances. That conversion belongs
-to a later validated projection adapter. Decimal output is serialized as strings.
+to the separate role projector or a future projection adapter. Decimal output is
+serialized as strings.
+
+## Role scenarios
+
+`project-roles` accepts mutually exclusive skater roles for one player and horizon.
+Each role supplies appearances, PP/non-PP minutes per appearance, and production
+rates per 60 minutes for each situation. PP must include every power-play strength;
+non-PP includes everything else. Do not supply all-situation rates as non-PP rates.
+
+Goals and assists from the two situations combine into their normal scoring
+totals. PP goals plus PP assists also produce the configured PPP bonus. PPP cannot
+be supplied separately, preventing inconsistent double adjustments. Negative
+plus/minus rates are allowed. Missing scored rates for nonzero exposure fail;
+unscored stats are omitted from output rather than labeled as projected zeros.
+
+Probabilities must sum to one and are explicitly labeled supplied assumptions,
+not calibrated estimates. Output reports each scenario, probability-weighted
+production and points, sources, rationales, and review warnings. Evidence dated
+after `as_of` is rejected. The min/max of positive-probability scenario means is
+not a prediction interval; random game outcomes are not simulated.
+
+The example is fictional. Scenarios need a common horizon, matching units and
+rates conditional on their role. Correlations between exposure and performance
+must be represented through scenarios; this version does not learn them. Source
+and date fields document claims but do not independently verify them. Goalie
+workload scenarios and direct PP-share-to-minutes estimation remain future work.
 
 Public code uses a generic example configuration. Private settings and downloaded
 data remain ignored; neither should be added to Git. Yahoo credentials are not

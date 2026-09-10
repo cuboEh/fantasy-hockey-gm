@@ -1,0 +1,42 @@
+{
+  "player_id": "example:fictional-skater",
+  "horizon": "Illustrative season, not an actual forecast",
+  "as_of": "2026-09-10",
+  "data_type": "illustrative",
+  "scenarios": [
+    {
+      "name": "Larger power-play role",
+      "probability": 0.4,
+      "appearances": 75,
+      "power_play": {
+        "minutes_per_appearance": 3,
+        "rates_per_60": {"goals": 2, "assists": 3, "plus_minus": 0, "shots_on_goal": 15, "hits": 1}
+      },
+      "non_power_play": {
+        "minutes_per_appearance": 15,
+        "rates_per_60": {"goals": 1, "assists": 1.5, "plus_minus": -0.2, "shots_on_goal": 9, "hits": 5}
+      },
+      "source": "Synthetic example, no external player claim",
+      "rationale": "Illustrates greater power-play exposure with unchanged rates",
+      "evidence_date": "2026-09-10",
+      "review_date": "2026-09-13"
+    },
+    {
+      "name": "Smaller power-play role",
+      "probability": 0.6,
+      "appearances": 75,
+      "power_play": {
+        "minutes_per_appearance": 1,
+        "rates_per_60": {"goals": 2, "assists": 3, "plus_minus": 0, "shots_on_goal": 15, "hits": 1}
+      },
+      "non_power_play": {
+        "minutes_per_appearance": 15,
+        "rates_per_60": {"goals": 1, "assists": 1.5, "plus_minus": -0.2, "shots_on_goal": 9, "hits": 5}
+      },
+      "source": "Synthetic example, no external player claim",
+      "rationale": "Illustrates reduced power-play exposure; this probability is an assumption",
+      "evidence_date": "2026-09-10",
+      "review_date": "2026-09-13"
+    }
+  ]
+}
