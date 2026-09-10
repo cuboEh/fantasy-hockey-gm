@@ -62,6 +62,12 @@ class BacktestTests(unittest.TestCase):
         self.assertEqual(report['selected_model']['shrink_games'],20)
         self.assertEqual(calls[-1][1],calls[4][1])
 
+    def test_partial_tuning_coverage_cannot_select_winner(self):
+        rows=[{'paired_delta':0}]*24+[{'paired_delta':None}]
+        with patch('fantasy_hockey.backtest.experiment',return_value={'runs':rows}):
+            with self.assertRaisesRegex(ValueError,'Incomplete tuning'):
+                run_study({},self.config)
+
     def test_unobserved_outcomes_cannot_select_winner(self):
         with patch('fantasy_hockey.backtest.experiment',return_value={'runs':[{'paired_delta':None}]*25}):
             with self.assertRaisesRegex(ValueError,'No common complete'):

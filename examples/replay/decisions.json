@@ -1,0 +1,47 @@
+{
+  "schema_version": 1,
+  "days": [
+    {
+      "date": "2025-10-01",
+      "week": "example-week",
+      "lock_at": "2025-10-01T18:00:00-06:00",
+      "available_at": "2025-10-01T12:00:00-06:00",
+      "players": [
+        {
+          "id": "fictional-a",
+          "kind": "skater",
+          "positions": [
+            "C",
+            "LW"
+          ],
+          "expected_points": 10,
+          "scheduled": true,
+          "available_at": "2025-10-01T12:00:00-06:00",
+          "source": "Fictional test inputs"
+        },
+        {
+          "id": "fictional-b",
+          "kind": "skater",
+          "positions": [
+            "C"
+          ],
+          "expected_points": 9,
+          "scheduled": true,
+          "available_at": "2025-10-01T12:00:00-06:00",
+          "source": "Fictional test inputs"
+        },
+        {
+          "id": "fictional-c",
+          "kind": "skater",
+          "positions": [
+            "LW"
+          ],
+          "expected_points": 4,
+          "scheduled": true,
+          "available_at": "2025-10-01T12:00:00-06:00",
+          "source": "Fictional test inputs"
+        }
+      ]
+    }
+  ]
+}

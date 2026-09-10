@@ -1,0 +1,46 @@
+{
+  "results": [
+    {
+      "date": "2025-10-01",
+      "id": "fictional-a",
+      "appeared": true,
+      "source": "Fictional test outcomes",
+      "stats": {
+        "goals": 0,
+        "assists": 0,
+        "plus_minus": 0,
+        "power_play_points": 0,
+        "shots_on_goal": 0,
+        "hits": 0
+      }
+    },
+    {
+      "date": "2025-10-01",
+      "id": "fictional-b",
+      "appeared": true,
+      "source": "Fictional test outcomes",
+      "stats": {
+        "goals": 1,
+        "assists": 0,
+        "plus_minus": 0,
+        "power_play_points": 0,
+        "shots_on_goal": 0,
+        "hits": 0
+      }
+    },
+    {
+      "date": "2025-10-01",
+      "id": "fictional-c",
+      "appeared": true,
+      "source": "Fictional test outcomes",
+      "stats": {
+        "goals": 4,
+        "assists": 0,
+        "plus_minus": 0,
+        "power_play_points": 0,
+        "shots_on_goal": 0,
+        "hits": 0
+      }
+    }
+  ]
+}

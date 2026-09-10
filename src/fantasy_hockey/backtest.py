@@ -7,7 +7,7 @@ import hashlib
 import json
 from pathlib import Path
 import random
-from statistics import mean
+from statistics import mean, median
 
 from .board import POSITIONS, read_json, season_lines
 from .config import load_config
@@ -20,10 +20,11 @@ class Model:
     shrink_games: int = 0
     workload_regression: float = 0.0
     strategy: str = 'points'
+    workload_mode: str = 'fixed'
 
     @property
     def name(self):
-        return f'shrink{self.shrink_games}_workload{self.workload_regression:g}_{self.strategy}'
+        return f'shrink{self.shrink_games}_workload{self.workload_regression:g}_{self.strategy}_{self.workload_mode}'
 
 
 @dataclass(frozen=True)
@@ -43,6 +44,8 @@ def historical_input(data, config, target):
     Position is the current source's primary position, an explicit unresolved
     metadata leak. Current ranks, teams, ages, flags and target stats are omitted.
     """
+    if target not in {2024,2025,2026}:
+        raise ValueError('This source adapter supports pre-draft history only from 2023 onward; older evaluation needs a complete historical adapter')
     result = []
     for group, kind in [('players', 'skater'), ('goalies', 'goalie')]:
         for row in data.get(group, []):
@@ -61,7 +64,29 @@ def historical_input(data, config, target):
     return result
 
 
+def cohort_workload(history, identity, kind, previous_gp):
+    """Five nearest historical usage transitions, excluding the target player.
+
+    Caller supplies pre-draft history only. No sufficient cohort means no
+    regression, not a universal goalie workload. This uses appearances, not starts.
+    """
+    pairs=[]
+    for other, _, _, other_kind, lines in history:
+        if other == identity or other_kind != kind:
+            continue
+        ordered=sorted(lines)
+        for prior, later in zip(ordered,ordered[1:]):
+            if later[0] == prior[0]+1:
+                pairs.append((abs(prior[1]-previous_gp),other,prior[0],later[1]))
+    nearest=sorted(pairs)[:5]
+    return median(p[3] for p in nearest) if len(nearest)>=3 else previous_gp
+
+
 def forecast(history, model):
+    if model.workload_mode not in {'fixed','cohort'}:
+        raise ValueError('Unknown workload mode')
+    if model.shrink_games < 0 or not 0 <= model.workload_regression <= 1:
+        raise ValueError('Invalid model parameters')
     # Per-appearance production prior uses only available historical observations.
     totals = Counter(); games = Counter()
     for _, _, pos, _, lines in history:
@@ -77,7 +102,7 @@ def forecast(history, model):
         gp = sum(w * gp for w, (_, gp, _) in zip(weights, lines)) / mass
         exposure = sum(gp for _, gp, _ in lines)
         rate = (rate * exposure + model.shrink_games * totals[pos] / games[pos]) / (exposure + model.shrink_games)
-        typical = 70 if kind == 'skater' else 45
+        typical = cohort_workload(history,identity,kind,gp) if model.workload_mode=='cohort' else (70 if kind == 'skater' else 45)
         gp = min(82, (1-model.workload_regression)*gp + model.workload_regression*typical)
         result.append(Forecast(identity, name, pos, kind, rate, gp, rate*gp))
     return result
@@ -187,6 +212,8 @@ def run_study(data, config, seeds=1):
     common=[i for i in range(len(scenarios)) if all(e['runs'][i]['paired_delta'] is not None for e in training)]
     if not common:
         raise ValueError('No common complete draft outcomes; cannot select a model')
+    if len(common) != len(scenarios):
+        raise ValueError('Incomplete tuning outcomes; resolve missing records before model selection')
     selection=[]
     for m,e in zip(models,training):
         selection.append({'name':m.name,'mean_paired_delta':mean(e['runs'][i]['paired_delta'] for i in common)})
@@ -205,7 +232,10 @@ def run_study(data, config, seeds=1):
             'selection_season':2024,'evaluation_season':2025,'common_selection_scenarios':len(common),
             'scenarios':len(scenarios),'selection':selection,'selected_model':asdict(models[winner]),
             'training':training,'evaluation':heldout,
-            'evaluation_summary':{'complete_pairs':len(paired),'mean_paired_delta':mean(paired) if paired else None,
+            'evaluation_summary':{'complete_pairs':len(paired),
+                                  'coverage_complete':len(paired)==len(scenarios),
+                                  'mean_paired_delta':mean(paired) if len(paired)==len(scenarios) else None,
+                                  'complete_case_mean_diagnostic_only':mean(paired) if paired else None,
                                   'min_delta':min(paired) if paired else None,'max_delta':max(paired) if paired else None}}
 
 

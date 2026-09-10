@@ -22,6 +22,12 @@ outcome. The apparent later-season gain falls from 387 to 85 whole-roster points
 no model is promoted. It also records the route and remaining data gaps for
 2015-onward evaluation.
 
+The [evaluation follow-up](docs/replay-and-workload.md) adds a timestamped daily
+lineup replay, an experimental historical-usage workload model, stricter missing
+outcome checks, and inspected 2015-16 MoneyPuck snapshots. Real historical daily
+replay still needs complete source data; these changes are not a validated model
+upgrade.
+
 ## Intended use
 
 The proposed tool will run locally in Python with a command-line interface and SQLite storage. Its intended user base is one person, the developer.
