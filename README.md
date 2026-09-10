@@ -12,6 +12,11 @@ Start with the [draft-day guide](docs/draft-day.md). See the [broad source surve
 
 Next priorities are verified eligibility, documented workload and role adjustments, rookie coverage, and position-specific replacement value. A permitted independent projection export would provide a useful comparison. Team count and draft slot remain to be confirmed. Yahoo approval is not required for the offline board and tracker.
 
+Historical refinement has started: a [chronological draft experiment](docs/backtesting.md)
+compares eight projection/selection variants, locks the tuning-season winner,
+and evaluates a later season. Current player-pool bias and the absence of daily
+lineup replay prevent treating it as a validated season simulation.
+
 ## Intended use
 
 The proposed tool will run locally in Python with a command-line interface and SQLite storage. Its intended user base is one person, the developer.
