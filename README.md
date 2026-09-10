@@ -17,6 +17,11 @@ compares eight projection/selection variants, locks the tuning-season winner,
 and evaluates a later season. Current player-pool bias and the absence of daily
 lineup replay prevent treating it as a validated season simulation.
 
+The [first-study audit](docs/first-study-review.md) corrects a confirmed zero-game
+outcome. The apparent later-season gain falls from 387 to 85 whole-roster points;
+no model is promoted. It also records the route and remaining data gaps for
+2015-onward evaluation.
+
 ## Intended use
 
 The proposed tool will run locally in Python with a command-line interface and SQLite storage. Its intended user base is one person, the developer.
