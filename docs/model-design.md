@@ -88,3 +88,60 @@ Before draft day, prefer an auditable baseline with explicit uncertainty over an
 unvalidated complex model. Goalie shutouts and single-game results need broad
 uncertainty. Higher NHL analytical quality does not necessarily imply higher
 fantasy value under the league's weights, roster slots and player availability.
+
+## Context and role assumptions
+
+Represent qualitative context as sourced assumptions about opportunity. A trade
+is a fact; losing PP1 is a hypothesis until supported by deployment evidence.
+Store source/date, confidence, affected horizon, review/expiry date and whether a
+base projection already includes the effect. User overrides remain visible.
+
+Use scenarios for uncertain roles, each with projected total/PP minutes,
+appearances and production rates. Combine scenarios using explicit probabilities
+and show the range. Initial probabilities are analyst assumptions, not calibrated
+model outputs. Stronger linemates can offset reduced minutes. Do not apply both
+a scenario change and a separate trade penalty for the same effect.
+
+## Additional candidate metrics, prioritized
+
+These are proposed features and decision metrics, not implemented or validated
+predictors. Exact acquisition rights and field availability must be checked.
+
+| Priority | Metric | Purpose |
+| --- | --- | --- |
+| Before draft | PP ice-time share, not only PP minutes | Separate team PP opportunity from allocation to a player |
+| Before draft | Shots/hits per 60 and expected minutes | Separate volume-generating rate from deployment |
+| Before draft | Expected appearances and missed-time scenarios | Account for injuries, scratches, uncertain roster spots and rest |
+| Before draft | Position/role-conditioned age and experience | Test development/decline priors, especially sparse NHL histories |
+| Before draft | Position-specific replacement value | Compare available choices for completing the roster |
+| Before draft | ADP, rank tiers and availability at next pick | Distinguish player value from draft acquisition timing |
+| Before draft | Projection range and input freshness | Show where rankings depend on uncertain or stale information |
+| Early enhancement | Goals versus xG, on-ice shooting percentage | Investigate sustainable finishing and teammate conversion |
+| Early enhancement | Individual point participation by strength | Points credited to player divided by team goals while on ice; investigate role/conversion effects |
+| Early enhancement | Primary/secondary assist rates | Test differing predictive value without changing scoring credit |
+| Early enhancement | Linemate continuity and role competition | Represent promotion/demotion scenarios and dependencies |
+| Early enhancement | Team strength and deployment | Test conservative plus/minus and goalie-win adjustments |
+| Early enhancement | Goalie start share and shot exposure | Separate quality, workload and fantasy production |
+| In season | Feasible lineup capture rate | Assigned eligible games divided by eligible scheduled games under a specified roster plan |
+| In season | Marginal points per acquisition | Compare complete legal streaming sequences with the no-move baseline |
+| In season | Roster correlations | Simulate shared PP units, teams and goalie tandems consistently |
+| Later research | NHL EDGE tracking features | Test incremental predictive value of zone time, shot location and speed |
+
+ADP measures draft behavior, not expected production. Estimate next-pick survival
+as an uncertain opponent model, not a guarantee. Multi-position flexibility and
+lineup capture are properties of a roster assignment, not fixed player bonuses.
+Point participation and on-ice conversion need matching situations/coverage and
+small-sample shrinkage; unusual values are not proof of luck or imminent change.
+
+Measure goalie shot exposure jointly with expected stopping performance. With
+the user's supplied weights, changing one shot faced from a save to a goal costs
+3.6 points before any change to win/shutout outcomes. This is sensitivity to the
+scoring formula, not a recommendation to prefer or avoid high-volume goalies.
+
+NHL EDGE publishes skating, shot and zone-time tracking metrics, but fantasy
+predictive value and permitted ingestion remain unverified.
+[NHL EDGE overview](https://www.nhl.com/news/nhl-edge-launches-website-for-puck-and-player-tracking-data)
+
+Do not add narrative multipliers for contract years, revenge games, motivation
+or preseason scoring without evidence of incremental predictive value. Prefer a
+small auditable feature set and compare additions with the same held-out baseline.
