@@ -230,3 +230,11 @@ unconfirmed. Decimal averages alone must not define opponent ordering, especiall
 where drafted percentages differ sharply. Exact normalized-name comparison is
 only a candidate identity match; unmatched names and eligibility differences are
 recorded in `comparison-first-210.json`.
+
+
+Further pasted batches bring the staged snapshot to 390 unique players in
+`draft-analysis-first-390.json`. There are 264 rows with decimal values and
+126 with missing values. Dashes are retained as missing, not zero or inferred
+late ADP. The corresponding name/eligibility audit is
+`comparison-first-390.json`. Season and decimal-column mapping still need
+confirmation before a market import. No live model data changed.
