@@ -2,6 +2,19 @@
 
 A private, non-commercial fantasy hockey analytics tool being planned by an individual developer for personal use in one Yahoo Fantasy Hockey league.
 
+## Usable Yahoo comparison board, September 11
+
+The [value-versus-market comparison](docs/yahoo-market-comparison.md) now covers
+390 supplied Yahoo players with source-backed NHL identity matches, reviewed
+eligibility differences, ADP/drafted percentages and separate historical/context
+valuations. The local CSV and readable report are ready for inspection. There are
+52 missing production estimates and two explicit team conflicts. All 122 tests pass.
+
+This step reused existing data and models without running more draft simulations.
+The guide records which components directly support the original draft/roster
+assistant and which search experiments are parked. Next: improve missing and
+uncertain values in this board, then prepare the reviewed draft session.
+
 ## Strategy review, September 11
 
 Model changes are paused while we review fantasy strategy. The
