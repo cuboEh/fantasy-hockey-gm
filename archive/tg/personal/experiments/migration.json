@@ -1,0 +1,96 @@
+{
+  "date": "2026-09-11",
+  "moves": [
+    {
+      "old": "tools/audit_draft_study.py",
+      "new": "archive/tg/personal/experiments/audit_draft_study.py",
+      "original_sha256": "f852a190fe635288815cb1a088b13d9ade9ef3b37bbe46fce298bfe7bdef2ee4"
+    },
+    {
+      "old": "tools/build_context_pilot.py",
+      "new": "archive/tg/personal/experiments/build_context_pilot.py",
+      "original_sha256": "20630d068e5fa2b7fcda689534687856375f548380b5ee4f8e553e81ae2fa4b3"
+    },
+    {
+      "old": "tools/import_csg_market.py",
+      "new": "archive/tg/personal/experiments/import_csg_market.py",
+      "original_sha256": "5efe846935bc76d764eb262ee8ba23368158b4235e4a9283c8750d664b42b505"
+    },
+    {
+      "old": "tools/review_workloads.py",
+      "new": "archive/tg/personal/experiments/review_workloads.py",
+      "original_sha256": "3cc4caad631b3a41e3389ab28b4c8f282213ef5b58cf873babb04b1ee7c5d511"
+    },
+    {
+      "old": "tools/validate_starter_rates.py",
+      "new": "archive/tg/personal/experiments/validate_starter_rates.py",
+      "original_sha256": "05aa9f89cbfe639f5c6e0525f00420bc209921c956f84d04cec25db3810bbc4b"
+    },
+    {
+      "old": "tools/evaluate_all_play.py",
+      "new": "research/evaluate_all_play.py",
+      "original_sha256": "314303c63d1b9722af2bfc524499656b7b744c4c479b0c2761c27061e2fb6c78"
+    },
+    {
+      "old": "tools/fetch_history.py",
+      "new": "research/fetch_history.py",
+      "original_sha256": "1f09e61c4ed386dea0bc0901ade644853e8fb3a8702235cc1d75f13ffd70302a"
+    },
+    {
+      "old": "tools/import_hockeyinsights_market.py",
+      "new": "research/import_hockeyinsights_market.py",
+      "original_sha256": "732cbba8d20bffc70b5e90f15effe1dd1399b9a7e79fe9f0fe943929afb6861e"
+    },
+    {
+      "old": "tools/join_context_case_outcomes.py",
+      "new": "research/join_context_case_outcomes.py",
+      "original_sha256": "febde2bf4366457cf1eec955ca75607b8216e4000a1c2670fd35fff1d0d538ae"
+    },
+    {
+      "old": "tools/rehearse_planner.py",
+      "new": "research/rehearse_planner.py",
+      "original_sha256": "1ced87813cb1154506fe64cf2b09cb06b07c3fa2a2cb684e01a67511deb66b2b"
+    },
+    {
+      "old": "tools/replay_analogue_drafts.py",
+      "new": "research/replay_analogue_drafts.py",
+      "original_sha256": "08923b54336ebc5025ad798b10bba44d440bcc4924c0f05d8aeca568efbdf319"
+    },
+    {
+      "old": "tools/score_matchups.py",
+      "new": "research/score_matchups.py",
+      "original_sha256": "8d266597992b59ffde7d1a97a1fef390dedc53080605330742fa2bb95b731265"
+    },
+    {
+      "old": "tools/summarize_draft_comparison.py",
+      "new": "research/summarize_draft_comparison.py",
+      "original_sha256": "44831b97643a144e164c68606616bfa165d04ed1c4337e6acb1262b6bc8e4b5f"
+    },
+    {
+      "old": "tools/summarize_seasons.py",
+      "new": "research/summarize_seasons.py",
+      "original_sha256": "8c4bea6c74a867a1baf974748c3ab5563fcb05b7d6e38b3ae2c364bbd7a42482"
+    },
+    {
+      "old": "tools/test_historical_analogues.py",
+      "new": "research/test_historical_analogues.py",
+      "original_sha256": "2c6534707e373c9d73a2c5886e0102d2d0639c828b1bcb1ee793a12386d5175a"
+    },
+    {
+      "old": "tools/validate_draft_planning.py",
+      "new": "research/validate_draft_planning.py",
+      "original_sha256": "b3f622bed821ae8b3482fc38bbc1f2dce864de4a5985699a2336bdbe3364c8eb"
+    },
+    {
+      "old": "src/fantasy_hockey/analogues.py",
+      "new": "research/analogues.py",
+      "original_sha256": "1cc0484f0b69de006762f1bcd723e34634f8ab0c843f21907124d0b5304bc291"
+    },
+    {
+      "old": "src/fantasy_hockey/context_cases.py",
+      "new": "research/context_cases.py",
+      "original_sha256": "64f45e695bcfa7eeace950499a6e4f33d65ca1a4a9d18e0ea745d83489a9a4e8"
+    }
+  ],
+  "note": "Original file hashes recorded before import/doc path updates. Git history retains exact prior versions. Existing results and their manifests are unchanged."
+}

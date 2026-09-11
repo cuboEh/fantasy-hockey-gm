@@ -1,6 +1,6 @@
 from copy import deepcopy
 import unittest
-from tools.replay_analogue_drafts import corrected_pools,paired_records
+from research.replay_analogue_drafts import corrected_pools,paired_records
 from fantasy_hockey.backtest import Forecast
 from test_analogues import row
 

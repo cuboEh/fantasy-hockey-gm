@@ -4,7 +4,7 @@ from pathlib import Path
 import json
 import hashlib
 from statistics import mean
-from fantasy_hockey.analogues import summarize,candidates,examples,predict
+from research.analogues import summarize,candidates,examples,predict
 from fantasy_hockey.board import dump_json
 
 

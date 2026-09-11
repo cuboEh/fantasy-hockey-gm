@@ -7,12 +7,12 @@ import json
 from pathlib import Path
 from statistics import mean
 
-from fantasy_hockey.analogues import summarize,candidates,examples,predict
+from research.analogues import summarize,candidates,examples,predict
 from fantasy_hockey.backtest import Model,forecast,mock_draft
 from fantasy_hockey.config import load_config
 from fantasy_hockey.seasonlab import prepare_history,replay_season,opportunity_evaluator
 from fantasy_hockey.board import dump_json
-from tools.score_matchups import compare
+from research.score_matchups import compare
 from fantasy_hockey.goalie_coverage import coverage_evaluator
 
 

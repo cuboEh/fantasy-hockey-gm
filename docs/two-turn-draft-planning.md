@@ -125,7 +125,7 @@ Artifacts:
 - `var/planning-opponent-stress-2026-09-10-v2/`
 
 Each contains its locked manifest, picks, replay weeks, rows and summary. Reproduce
-with `tools.validate_draft_planning --help`; use new directories. Earlier failed
+with `research.validate_draft_planning --help`; use new directories. Earlier failed
 runs are retained, including the historical team-code issue that was corrected.
 
 ### Workflow and prospective evaluation

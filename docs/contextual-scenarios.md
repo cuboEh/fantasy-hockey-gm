@@ -62,7 +62,7 @@ upcoming workload than relying solely on last spring's playoff rotation.
 From the repository root, use new output filenames to preserve earlier results:
 
 ```sh
-uv run python tools/build_context_pilot.py \
+uv run python archive/tg/personal/experiments/build_context_pilot.py \
   --board var/prepared-market-2026-09-10/board.json \
   --history var/history-2026.json \
   --goalie-box snapshots/2026-09-10/sportsdataverse/goalie_box_2026.csv \

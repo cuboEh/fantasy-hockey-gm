@@ -54,7 +54,7 @@ repair an inaccurate injury or workload forecast by itself.
 Private full results: `var/goalie-coverage-2026-09-10/`. Reproduce into a new folder:
 
 ```bash
-uv run python -m tools.replay_analogue_drafts \
+uv run python -m research.replay_analogue_drafts \
   --history-dir var --config config.local.toml \
   --output-dir var/goalie-coverage-repeat
 ```

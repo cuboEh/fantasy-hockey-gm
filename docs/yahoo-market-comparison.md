@@ -72,7 +72,7 @@ The CSV retains every supplied row, including low drafted percentages.
 ## Reproduce locally
 
 ```bash
-uv run python -m tools.compare_yahoo_market \
+uv run fantasy compare-market \
   --snapshot snapshots/2026-09-11/yahoo-user-supplied/draft-analysis-20262027-confirmed.json \
   --board var/prepared-market-2026-09-10/board.json \
   --catalog snapshots/2026-09-10/moneypuck/skaters.csv snapshots/2026-09-10/moneypuck/goalies.csv \

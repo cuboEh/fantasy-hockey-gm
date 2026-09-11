@@ -80,9 +80,9 @@ the outcome adapter now handles both forms without treating missing labels as fa
 ## Reproduction and next work
 
 ```sh
-uv run python -m tools.replay_analogue_drafts --history-dir var \
+uv run python -m research.replay_analogue_drafts --history-dir var \
   --config config.local.toml --output-dir var/NEW-analogue-draft-replay
-uv run python tools/join_context_case_outcomes.py \
+uv run python research/join_context_case_outcomes.py \
   --cases private/goalie-context-cases-2024-v2.json --history var/history-2025.json \
   --goalie-box snapshots/2026-09-10/sportsdataverse/goalie_box_2025.csv \
   --output var/NEW-goalie-case-outcomes.json

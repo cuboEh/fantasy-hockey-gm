@@ -96,7 +96,7 @@ pending. Undrafted players are assumed free by the first season game. No claim
 is made that every simulated move would be legal in the user's Yahoo league.
 Monday-Sunday weeks are reconstructed, without actual fantasy playoffs.
 
-`tools/score_matchups.py` additionally scores fixed versus active management
+`research/score_matchups.py` additionally scores fixed versus active management
 against synthetic round-robin opponents, including byes for 13 teams. Opponents
 use fixed rosters and their own daily lineup policy. Source-conflict weeks are
 excluded and counted. These are hypothetical H2H records, not historical Yahoo
@@ -164,7 +164,7 @@ Use fresh output directories to preserve previous runs. Published release years
 are season-ending years, so `2025` means 2024-25.
 
 ```sh
-uv run python tools/fetch_history.py --directory snapshots/NEW-DATE/sportsdataverse \
+uv run python research/fetch_history.py --directory snapshots/NEW-DATE/sportsdataverse \
   --years 2013 2014 2015 2016 2017 2018 2019 2020 2021 2022 2023 2024 2025 2026 \
   --datasets skater_box goalie_box scoring schedule
 uv run python -m fantasy_hockey.history --directory snapshots/NEW-DATE/sportsdataverse \
@@ -178,13 +178,13 @@ uv run python -m fantasy_hockey.seasonlab --history-dir var/new-history \
 Repeat with seed 1 and a separate output directory. Then:
 
 ```sh
-uv run python tools/summarize_seasons.py --studies var/new-study-seed0 var/new-study-seed1 \
+uv run python research/summarize_seasons.py --studies var/new-study-seed0 var/new-study-seed1 \
   --output var/new-review.json
-uv run python tools/score_matchups.py --study-dir var/new-study-seed0 \
+uv run python research/score_matchups.py --study-dir var/new-study-seed0 \
   --history-dir var/new-history --config config.local.toml --output var/new-matchups.json
 ```
 
-For market sensitivity, use `tools/import_csg_market.py` on the saved workbook,
+For market sensitivity, use `archive/tg/personal/experiments/import_csg_market.py` on the saved workbook,
 then supply `--market-csv`, one target `--years 2025`, and an explicit compatible
 `--draft-date 2024-09-27` to seasonlab. This historical example date is not the
 user's current September 13 draft date.

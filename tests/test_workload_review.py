@@ -2,7 +2,7 @@ from copy import deepcopy
 from datetime import date
 from decimal import Decimal
 import unittest
-from tools.review_workloads import build_review
+from archive.tg.personal.experiments.review_workloads import build_review
 
 
 class WorkloadReviewTests(unittest.TestCase):

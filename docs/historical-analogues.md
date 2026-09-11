@@ -37,7 +37,7 @@ baseline points, selected without outcomes. That subset is useful for draft
 relevance, but does not represent a roster-constrained draft or actual Yahoo ADP.
 
 ```sh
-uv run python tools/test_historical_analogues.py --history-dir var \
+uv run python research/test_historical_analogues.py --history-dir var \
   --output var/NEW-analogue-study.json
 ```
 

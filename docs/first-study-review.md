@@ -13,12 +13,12 @@ versus 23 benchmark rosters. NHL reporting confirms he missed 2025-26 entirely.
 [Official report](https://www.nhl.com/news/healthy-aleksander-barkov-raring-to-go-for-panthers-after-knee-injury)
 
 A sourced private correction sets his realized NHL games and points to zero.
-`tools/audit_draft_study.py` rescores the saved picks after the draft, without
+`archive/tg/personal/experiments/audit_draft_study.py` rescores the saved picks after the draft, without
 changing forecasts, picks, model selection, or the original report. It never
 blanket-fills missing outcomes with zero. Private inputs and results:
 
 ```sh
-uv run python tools/audit_draft_study.py var/draft-study.json \
+uv run python archive/tg/personal/experiments/audit_draft_study.py var/draft-study.json \
   private/outcome-corrections-2025.json var/draft-study-audit.json
 ```
 

@@ -55,7 +55,7 @@ class HistoricalTests(unittest.TestCase):
 
 class AdditionalPolicyTests(unittest.TestCase):
     def test_round_robin_pairings_include_every_opponent(self):
-        from tools.score_matchups import rounds
+        from research.score_matchups import rounds
         for teams in (12,13):
             schedules=rounds(teams)
             for seat in range(1,teams+1):
@@ -104,7 +104,7 @@ class NormalizerTests(unittest.TestCase):
 
 class MatchupCoverageTests(unittest.TestCase):
     def test_both_policies_use_same_complete_weeks(self):
-        from tools.score_matchups import common_weeks
+        from research.score_matchups import common_weeks
         def side(weeks):return {'record':{'wins':len(weeks),'losses':0,'ties':0,'byes':0,'conflict_weeks_excluded':1},'weeks':[{'week':w,'outcome':'wins'} for w in weeks]}
         fixed,active=common_weeks(side(['a','b']),side(['b','c']))
         self.assertEqual(fixed['weeks'],active['weeks'])

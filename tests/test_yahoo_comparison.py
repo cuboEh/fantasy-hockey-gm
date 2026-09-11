@@ -1,6 +1,6 @@
 from copy import deepcopy
 import unittest
-from tools.compare_yahoo_market import compare
+from fantasy_hockey.market import compare_yahoo as compare
 
 
 class YahooComparisonTests(unittest.TestCase):
@@ -43,7 +43,7 @@ class YahooComparisonTests(unittest.TestCase):
 
     def test_scenarios_are_separate_from_baseline_and_market(self):
         from fantasy_hockey.draft_value import DraftPlayer, Exposure
-        from tools.compare_yahoo_market import attach_scenarios
+        from fantasy_hockey.market import attach_scenarios
         source,board,catalog=self.fixture()
         report=compare(source,board,catalog)
         player=DraftPlayer('nhl:1','Elias Pettersson','VAN','skater',('C',),Exposure(60,3),Exposure(40,3))

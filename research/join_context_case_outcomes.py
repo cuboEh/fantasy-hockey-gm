@@ -4,7 +4,7 @@ import csv
 import hashlib
 import json
 from pathlib import Path
-from fantasy_hockey.context_cases import validate_cases
+from research.context_cases import validate_cases
 from fantasy_hockey.board import dump_json
 
 

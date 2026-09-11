@@ -49,7 +49,7 @@ class ContextTests(unittest.TestCase):
         import csv
         import tempfile
         from pathlib import Path
-        from tools.build_context_pilot import conditional_rates
+        from archive.tg.personal.experiments.build_context_pilot import conditional_rates
         rows=[{'game_id':'2025020001','id':'1','date':'2025-10-07','appeared':True,
                'stats':{'wins':1,'goals_against':2,'saves':30,'shutouts':0}},
               {'game_id':'2025020002','id':'1','date':'2025-10-08','appeared':True,

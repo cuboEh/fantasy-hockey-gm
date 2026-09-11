@@ -1,7 +1,7 @@
 """Rescore frozen mock picks with explicit, sourced outcome corrections.
 
 Never changes forecasts, selections, source history or the original report.
-Run: uv run python tools/audit_draft_study.py STUDY CORRECTIONS OUTPUT
+Run: uv run python archive/tg/personal/experiments/audit_draft_study.py STUDY CORRECTIONS OUTPUT
 Corrections JSON: {"target":2025,"players":{"NHL_ID":{"points":0,
 "games":0,"source":"URL","verified_at":"YYYY-MM-DD","reason":"..."}}}
 """

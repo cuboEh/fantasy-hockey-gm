@@ -1,6 +1,6 @@
 from copy import deepcopy
 import unittest
-from fantasy_hockey.analogues import candidates,predict,examples
+from research.analogues import candidates,predict,examples
 
 
 def row(pid,games=60,rate=5):

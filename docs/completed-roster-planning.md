@@ -121,17 +121,17 @@ in the isolated practice session.
 ## Reproduce the fixed comparison
 
 ```bash
-uv run python -m tools.validate_draft_planning \
+uv run python -m research.validate_draft_planning \
   --years 2015 2016 2017 2018 2019 2020 --seats 7 --styles rank \
   --policies coverage_frozen starter_coverage scenario_completion \
   --output-dir NEW_EARLY_DIRECTORY
 
-uv run python -m tools.validate_draft_planning \
+uv run python -m research.validate_draft_planning \
   --years 2021 2022 2023 2024 2025 2026 --seats 7 --styles rank --seed 1 \
   --policies coverage_frozen starter_coverage scenario_completion \
   --output-dir NEW_LATER_DIRECTORY
 
-uv run python -m tools.summarize_draft_comparison \
+uv run python -m research.summarize_draft_comparison \
   --directories NEW_EARLY_DIRECTORY NEW_LATER_DIRECTORY \
   --output NEW_PAIRED_REPORT.json
 ```
@@ -159,7 +159,7 @@ missing or systematically wrong projections.
 
 ## Weekly all-play diagnostic
 
-`tools.evaluate_all_play` replays every simulated team's locked roster with the
+`research.evaluate_all_play` replays every simulated team's locked roster with the
 same baseline lineup forecasts, then compares our score with all 13 opponents in
 each week. Ties count half. Comparisons retain common conflict-free opponent/week
 pairs across policies, rather than comparing different clean-week samples. Input
@@ -171,7 +171,7 @@ choices change, and no streaming is included. Reproduce after the draft studies
 have completed:
 
 ```bash
-uv run python -m tools.evaluate_all_play \
+uv run python -m research.evaluate_all_play \
   --directories NEW_EARLY_DIRECTORY NEW_LATER_DIRECTORY \
   --output NEW_ALL_PLAY_REPORT.json
 ```

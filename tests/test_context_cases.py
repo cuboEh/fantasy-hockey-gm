@@ -1,6 +1,6 @@
 from copy import deepcopy
 import unittest
-from fantasy_hockey.context_cases import validate_cases
+from research.context_cases import validate_cases
 
 
 class ContextCaseTests(unittest.TestCase):

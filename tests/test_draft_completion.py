@@ -29,7 +29,7 @@ class ComparisonTests(unittest.TestCase):
         import json
         import tempfile
         from pathlib import Path
-        from tools.summarize_draft_comparison import summarize
+        from research.summarize_draft_comparison import summarize
         with tempfile.TemporaryDirectory() as tmp:
             root=Path(tmp)
             (root/'summary.json').write_text('{}')

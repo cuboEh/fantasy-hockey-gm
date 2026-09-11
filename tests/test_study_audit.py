@@ -1,6 +1,6 @@
 from copy import deepcopy
 import unittest
-from tools.audit_draft_study import audit
+from archive.tg.personal.experiments.audit_draft_study import audit
 
 
 class AuditTests(unittest.TestCase):
