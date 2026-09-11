@@ -172,9 +172,22 @@ Return to this after the core draft companion is complete, during weekly/waiver
 planning or a later playoff-planning increment. No new implementation or research
 is authorized as the immediate priority by this note.
 
+## Authorized model increment, September 11
+
+Tristan authorized a bounded pick-now-versus-wait comparison after trying the
+browser dashboard. This is now available on demand when the user is on the clock.
+It reuses the working projections, daily slot matching and two-turn planner, with
+four opponent hypotheses and fixed-pair conditional stress. The basic board remains
+available. See [model notes](pick-comparison.md) for the modest forecast-proxy gains,
+141 passing tests and limitations. No predictive advantage has been established.
+
+Next: retain practical MVP 1 reliability, refresh material pre-draft evidence, and
+specify dated historical outcome validation before promoting this method or tuning
+weights. Broad infrastructure and advanced schedule-strength work remain deferred.
+
 ## Parked until justified
 
-Full-draft and two-turn search refinements, new Monte Carlo/category-win models,
+Broader full-draft search and Monte Carlo/category-win models,
 learning weights from repeatedly inspected seasons, broader automated news ingestion,
 trade analysis, notifications and automated roster writes. Category-balancing logic
 is not a priority for the current points league. No Docker, web application, cloud

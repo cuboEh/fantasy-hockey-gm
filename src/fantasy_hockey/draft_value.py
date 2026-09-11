@@ -36,8 +36,9 @@ def scenario_points(player: DraftPlayer, case: str = 'baseline') -> float:
 
 class RosterValue:
     """Exact daily slot matching; expected exposure and goalie-week probabilities are proxies."""
-    def __init__(self, players: list[DraftPlayer], calendar: dict, slots: dict):
+    def __init__(self, players: list[DraftPlayer], calendar: dict, slots: dict, *, draft_opportunity=False):
         self.players={p.id:p for p in players};self.calendar=calendar;self.slots=slots
+        self.draft_opportunity=draft_opportunity
         if len(self.players)!=len(players):raise ValueError('Duplicate decision player ID')
         self.days=defaultdict(set);self.team_games=Counter()
         for g in calendar['games'].values():
@@ -52,22 +53,26 @@ class RosterValue:
 
     @lru_cache(maxsize=12000)
     def skaters(self, ids: tuple, case: str) -> float:
-        ordered=sorted((self.players[pid] for pid in ids),key=lambda p:(-self.daily_rate(p,case),p.id))
-        signatures=Counter(tuple(p.id for p in ordered if p.team in teams and self.daily_rate(p,case)>0) for teams in self.days.values())
+        return self.active_points(ids,case,self.skater_slots)
+
+    def active_points(self, ids, case, slots):
+        rates={pid:self.daily_rate(self.players[pid],case) for pid in ids}
+        ordered=sorted((self.players[pid] for pid in ids if rates[pid]>0),key=lambda p:(-rates[p.id],p.id))
+        signatures=Counter(tuple(p.id for p in ordered if p.team in teams) for teams in self.days.values())
         result=0
         for signature,count in signatures.items():
             active=[];points=0;counts=Counter()
             if all(len(self.players[pid].positions)==1 for pid in signature):
                 for pid in signature:
                     p=self.players[pid];pos=p.positions[0]
-                    if counts[pos]<self.skater_slots.get(pos,0):
-                        counts[pos]+=1;points+=self.daily_rate(p,case)
+                    if counts[pos]<slots.get(pos,0):
+                        counts[pos]+=1;points+=rates[pid]
             else:
                 # Maximum-weight independent set of the slot-matching matroid.
                 for pid in signature:
                     p=self.players[pid];row=p.roster_row()
-                    if len(roster_assignment(active+[row],self.skater_slots))==len(active)+1:
-                        active.append(row);points+=self.daily_rate(p,case)
+                    if len(roster_assignment(active+[row],slots))==len(active)+1:
+                        active.append(row);points+=rates[pid]
             result+=count*points
         return result
 
@@ -78,6 +83,10 @@ class RosterValue:
 
     @lru_cache(maxsize=12000)
     def goalies(self,ids: tuple,case: str) -> tuple:
+        if self.draft_opportunity:
+            # GP forecasts include appearances, not verified starts. Do not feed
+            # them into the mutually exclusive starter/weekly qualification model.
+            return self.active_points(ids,case,{'G':self.slots.get('G',0)}),None
         rows=[]
         for pid in ids:
             p=self.players[pid];exp=getattr(p,case)

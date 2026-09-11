@@ -15,18 +15,25 @@ from .preparation import guidance
 
 
 def state(path: Path) -> dict:
-    board = draft.draft_board(path, limit=10000)
-    with draft.connect(path) as db:
-        picks = [dict(r) for r in db.execute('SELECT picks.*, json_extract(players.payload, "$.name") AS name FROM picks JOIN players ON players.id=picks.player_id ORDER BY pick DESC')]
-        revision = db.execute('SELECT COALESCE(MAX(id),0) FROM events').fetchone()[0]
-    return {'board':board, 'guide':guidance(path,limit=6), 'picks':picks,
-            'revision':revision,'session':path.name}
+    # The tracker and guide have independent read connections. Do not label an
+    # older board with a newer revision if the CLI changes it during these reads.
+    for _ in range(3):
+        with draft.connect(path) as db:before=db.execute('SELECT COALESCE(MAX(id),0) FROM events').fetchone()[0]
+        board=draft.draft_board(path,limit=10000);guide=guidance(path,limit=6)
+        with draft.connect(path) as db:
+            db.execute('BEGIN')
+            picks=[dict(r) for r in db.execute('SELECT picks.*, json_extract(players.payload, "$.name") AS name FROM picks JOIN players ON players.id=picks.player_id ORDER BY pick DESC')]
+            revision=db.execute('SELECT COALESCE(MAX(id),0) FROM events').fetchone()[0]
+        if before==revision:
+            return {'board':board,'guide':guide,'picks':picks,'revision':revision,'session':path.name}
+    raise ValueError('The draft is changing. Refresh to load a consistent view.')
 
 
-def make_server(path: Path, port: int = 8765) -> HTTPServer:
+def make_server(path: Path, port: int = 8765, schedule_path: Path | None = None) -> HTTPServer:
     path = path.resolve()
     state(path)  # Fail before opening the listener if the session is unusable.
     token = secrets.token_urlsafe(32)
+    comparison_cache={}
 
     class Handler(BaseHTTPRequestHandler):
         def allowed_host(self):
@@ -50,7 +57,7 @@ def make_server(path: Path, port: int = 8765) -> HTTPServer:
                 if self.path == '/':
                     html = Path(__file__).with_name('dashboard.html').read_text().replace('__TOKEN__',token)
                     self.respond(html.encode(),content_type='text/html; charset=utf-8')
-                elif self.path == '/api/state':self.respond(state(path))
+                elif self.path == '/api/state':self.respond({**state(path),'comparison_available':bool(schedule_path and schedule_path.is_file())})
                 elif self.path == '/api/health':self.respond({'app':'fantasy-hockey-dashboard','db':str(path)})
                 elif self.path == '/backup':
                     with tempfile.TemporaryDirectory() as directory:
@@ -73,7 +80,18 @@ def make_server(path: Path, port: int = 8765) -> HTTPServer:
                 data = json.loads(self.rfile.read(length))
                 if not isinstance(data,dict) or type(data.get('revision')) is not int:raise ValueError('Refresh the dashboard first')
                 revision = data['revision']
-                if self.path == '/api/pick':
+                if self.path == '/api/compare':
+                    from .decision_cli import working_snapshot, compare_working
+                    import hashlib
+                    if not schedule_path:raise ValueError('No schedule configured. Basic draft tracking remains available.')
+                    snapshot=working_snapshot(path)
+                    if snapshot['revision']!=revision:raise ValueError('The draft changed. Refresh before comparing picks.')
+                    raw=schedule_path.read_bytes();key=(revision,hashlib.sha256(raw).hexdigest())
+                    if key not in comparison_cache:
+                        result=compare_working(snapshot,json.loads(raw))
+                        comparison_cache.clear();comparison_cache[key]=result
+                    self.respond(comparison_cache[key]);return
+                elif self.path == '/api/pick':
                     if not isinstance(data.get('player'),str) or not data['player']:raise ValueError('Select a player')
                     draft.pick_player(path,data['player'],expected_revision=revision)
                 elif self.path == '/api/undo':draft.undo(path,expected_revision=revision)
@@ -94,12 +112,13 @@ def register(commands):
     parser.add_argument('--db',type=Path,required=True)
     parser.add_argument('--port',type=int,default=8765)
     parser.add_argument('--open',action='store_true',dest='open_browser')
+    parser.add_argument('--schedule',type=Path,help='Normalized upcoming schedule for pick-now versus wait comparisons')
 
 
 def handle(args):
     if not 1 <= args.port <= 65535:raise ValueError('Port must be between 1 and 65535')
     url = f'http://127.0.0.1:{args.port}'
-    try:server = make_server(args.db,args.port)
+    try:server = make_server(args.db,args.port,args.schedule)
     except OSError:
         # Reopening the desktop launcher should reuse this exact session only.
         try:

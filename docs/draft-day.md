@@ -11,6 +11,13 @@ Double-click **Fantasy Hockey Dashboard** on your Windows desktop, or open
 The desktop launcher starts the local server in a minimized window. Keep it running
 through the draft. Closing a browser tab does not delete progress.
 
+When your team is on the clock, **Compare my next two picks** adds a roster-aware
+comparison above the season-points board. It models daily lineup opportunity and
+several possible opponent orders, with a separate same-pair stress comparison.
+It is experimental; see [method, results and limitations](pick-comparison.md).
+Results disappear after the draft state changes. The desktop launcher includes
+the schedule required for this feature.
+
 Use **My draft slot** to set the actual slot. **Record** opens a confirmation showing
 the player, current pick and receiving team. Record every team's picks in order,
 then inspect the refreshed recommendations and your roster. **Undo last pick**

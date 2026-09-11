@@ -52,7 +52,7 @@ def simulate_until(order,rosters,selected,first,last,teams,players,slots):
     return trace
 
 
-def compare_turns(players, picks, slots, teams, seat, value, seeds=(0,1,2), style='rank', width=6, opponent_orders=None):
+def compare_turns(players, picks, slots, teams, seat, value, seeds=(0,1,2), style='rank', width=6, opponent_orders=None, *, fixed_next_pick=False, include_ids=()):
     """No outcome inputs. Rank baseline and downside separately, never blend their likelihoods."""
     if not isinstance(seat,int) or not 1<=seat<=teams:raise ValueError('Set your actual draft slot before planning')
     if not seeds or len(set(seeds))!=len(seeds):raise ValueError('Use distinct opponent seeds')
@@ -72,7 +72,13 @@ def compare_turns(players, picks, slots, teams, seat, value, seeds=(0,1,2), styl
     initial={case:value.evaluate(own,case) for case in ('baseline','downside')}
     available=[p for p in players if p.id not in selected]
     candidates={p.id:p for case in initial for p in shortlist(available,own,mapping,slots,case,width)}
+    for pid in include_ids:
+        if pid not in mapping or pid in selected or not fits(mapping[pid],own,mapping,slots):raise ValueError('Invalid comparison candidate')
+        candidates[pid]=mapping[pid]
+    if opponent_orders is not None and set(opponent_orders)!=set(seeds):raise ValueError('Opponent orders must match seeds')
     orders=opponent_orders or {seed:preferences(players,seed,style) for seed in seeds}
+    for order in orders.values():
+        if len(order)!=len(mapping) or {p.id for p in order}!=set(mapping):raise ValueError('Opponent order must contain each player exactly once')
     rows=[]
     for candidate in candidates.values():
         if candidate.baseline is None or candidate.downside is None:continue
@@ -85,6 +91,11 @@ def compare_turns(players, picks, slots, teams, seat, value, seeds=(0,1,2), styl
             remaining=[p for p in players if p.id not in taken]
             best={}
             for case in initial:
+                if fixed_next_pick and case=='downside':
+                    chosen=best['baseline']['next_id']
+                    best[case]={'next_id':chosen,'next_name':best['baseline']['next_name'],
+                                'value':value.evaluate(branch_rosters[seat]+([chosen] if chosen else []),case)}
+                    continue
                 choices=shortlist(remaining,branch_rosters[seat],mapping,slots,case,width) if future else []
                 scored=[(value.evaluate(branch_rosters[seat]+[p.id],case),p) for p in choices]
                 chosen=max(scored,key=lambda pair:(pair[0]['points'],scenario_points(pair[1],case),pair[1].id)) if scored else None
@@ -111,14 +122,15 @@ def compare_turns(players, picks, slots, teams, seat, value, seeds=(0,1,2), styl
             counts=[sum(mapping[pid].kind=='goalie' for pid in own+[row['id']]+([o['next_id']] if o['next_id'] else [])) for o in outcomes]
             row['two_pick_coverage'][case]={'expected_failed_weeks':mean(failed) if all(v is not None for v in failed) else None,'minimum_goalies':min(counts)}
     if any(mapping[pid].kind=='goalie' for pid in own):
-        eligible=[r for r in rows if r['two_pick_coverage']['baseline']['minimum_goalies']>=2]
+        eligible=[r for r in rows if r['two_pick_coverage']['baseline']['minimum_goalies']>=2
+                  and r['two_pick_coverage']['baseline']['expected_failed_weeks'] is not None]
         if eligible:
             alternative=min(eligible,key=lambda r:(r['two_pick_coverage']['baseline']['expected_failed_weeks'],-r['two_pick_gain']['baseline'],r['id']))
             coverage_alternative={'id':alternative['id'],'name':alternative['name'],
                                   'expected_failed_weeks':alternative['two_pick_coverage']['baseline']['expected_failed_weeks'],
                                   'points_cost_vs_baseline_choice':rows[0]['two_pick_gain']['baseline']-alternative['two_pick_gain']['baseline']}
     return {'coverage_alternative':coverage_alternative,'pick':next_pick,'next_turn':future,'seat':seat,'seeds':list(seeds),'opponent_style':style,'initial':initial,'candidates':rows,
-            'baseline_choice':rows[0]['id'],'downside_choice':max(rows,key=lambda r:(r['two_pick_gain']['downside'],r['id']))['id'],
+            'baseline_choice':rows[0]['id'],'downside_choice':min(rows,key=lambda r:(-r['two_pick_gain']['downside'],r['id']))['id'],
             'warnings':['Two-turn search, not a complete-draft optimum; unfinished goalie rosters may be undervalued',
                         'Baseline and downside are separate conditional cases, with independently chosen next picks',
                         'Survival fractions describe synthetic opponents, not calibrated Yahoo ADP probabilities',

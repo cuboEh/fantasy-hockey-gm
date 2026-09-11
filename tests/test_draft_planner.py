@@ -102,3 +102,78 @@ class StarterRateTests(unittest.TestCase):
         r=estimate_rates(history,boxes,{'saves':1},date(2026,9,10))['players']['nhl:1']
         self.assertIsNone(r['start']['shrunk_points'])
         self.assertEqual(r['excluded_conflicts'],1)
+
+
+class WorkingComparisonTests(unittest.TestCase):
+    def fixture(self):
+        players=[player('c1',110,rank=1),player('w1',100,'LW',rank=2),
+                 player('c2',90,rank=3),player('w2',10,'LW',rank=4)]
+        rows=[{'id':p.id,'name':p.name,'kind':p.kind,'team':p.team,'positions':list(p.positions),
+               'projected_games':3,'points_per_game':p.baseline.rate,'projected_points':3*p.baseline.rate,
+               'flags':[],'yahoo':{'rank':int(p.market_rank),'adp':p.market_rank,'percent_drafted':100,'as_of':'2026-09-11'}} for p in players]
+        return {'revision':0,'teams':2,'slot':1,'picks':[],
+                'board':{'season':'2026-27','as_of':'2026-09-11','players':rows,
+                         'assumptions':{'season_games':3},'roster_slots':{'C':1,'LW':1}}}, {'season':'20262027',**calendar()}
+
+    def test_wing_now_center_later_beats_highest_points_first(self):
+        from fantasy_hockey.decision_cli import compare_working
+        snapshot,schedule=self.fixture();original=deepcopy(snapshot)
+        result=compare_working(snapshot,schedule)
+        self.assertEqual(result['points_choice'],'c1')
+        self.assertEqual(result['yahoo_choice'],'c1')
+        self.assertEqual(result['baseline_choice'],'w1')
+        self.assertGreater(result['gain_vs_points'],0)
+        self.assertEqual(snapshot,original)
+        for row in result['candidates']:
+            for branch in row['branches']:
+                self.assertEqual(branch['best_by_case']['baseline']['next_id'],branch['best_by_case']['downside']['next_id'])
+
+    def test_transferred_stress_is_separate_and_future_data_rejected(self):
+        from fantasy_hockey.decision_cli import compare_working
+        snapshot,schedule=self.fixture()
+        snapshot['board']['players'][1]['review']={'reference_scenarios':{'baseline_points':100,'downside_points':50,'as_of':'2026-09-10'}}
+        result=compare_working(snapshot,schedule)
+        row=next(r for r in result['candidates'] if r['id']=='w1')
+        self.assertEqual(row['season_points'],300)
+        self.assertEqual(row['stress']['factor'],.5)
+        self.assertLess(row['two_pick_gain']['downside'],row['two_pick_gain']['baseline'])
+        snapshot['board']['players'][0]['yahoo']['as_of']='2026-09-12'
+        with self.assertRaisesRegex(ValueError,'Future'):compare_working(snapshot,schedule)
+
+    def test_missing_owned_forecast_blocks_model_not_tracking(self):
+        from fantasy_hockey.decision_cli import compare_working
+        snapshot,schedule=self.fixture();snapshot['board']['roster_slots']['BN']=1
+        snapshot['picks']=[{'pick':1,'team':1,'player_id':'c1'}, {'pick':2,'team':2,'player_id':'w1'}, {'pick':3,'team':2,'player_id':'c2'}]
+        snapshot['board']['players'][0]['projected_points']=None
+        with self.assertRaisesRegex(ValueError,'owned player'):compare_working(snapshot,schedule)
+
+    def test_yahoo_team_aliases_match_nhl_schedule(self):
+        from fantasy_hockey.decision_cli import compare_working
+        snapshot,schedule=self.fixture()
+        for row in snapshot['board']['players']:row['team']='NJ'
+        for game in schedule['games'].values():game['teams']=['NJD','B']
+        self.assertTrue(compare_working(snapshot,schedule)['candidates'])
+
+    def test_off_nights_can_make_weaker_player_more_useful(self):
+        players=[player('owned',100),player('crowded',90),player('offnight',80,team='B')]
+        schedule={'games':{str(i):{'date':f'2026-10-{i+5:02}','teams':['A','X'] if i<3 else ['B','Y']} for i in range(6)}}
+        value=RosterValue(players,schedule,{'C':1,'BN':1},draft_opportunity=True)
+        initial=value.evaluate(['owned'])['points']
+        self.assertEqual(value.evaluate(['owned','crowded'])['points']-initial,0)
+        self.assertEqual(value.evaluate(['owned','offnight'])['points']-initial,240)
+
+    def test_draft_goalie_opportunity_does_not_apply_unfinished_weekly_minimum(self):
+        goalie=DraftPlayer('g','G','A','goalie',('G',),Exposure(1,10),Exposure(1,10))
+        value=RosterValue([goalie],calendar(),{'G':2},draft_opportunity=True)
+        self.assertAlmostEqual(value.evaluate(['g'])['points'],10)
+        self.assertIsNone(value.evaluate(['g'])['failed_weeks_proxy'])
+        legacy=RosterValue([goalie],calendar(),{'G':2})
+        self.assertLess(legacy.evaluate(['g'])['points'],10)
+
+    def test_opponent_orders_require_matching_scenarios_and_unique_pool(self):
+        players=[player('a'),player('b'),player('c')];slots={'C':1,'BN':1}
+        value=RosterValue(players,calendar(),slots)
+        with self.assertRaisesRegex(ValueError,'match seeds'):
+            compare_turns(players,[],slots,2,1,value,seeds=(0,),opponent_orders={1:players})
+        with self.assertRaisesRegex(ValueError,'exactly once'):
+            compare_turns(players,[],slots,2,1,value,seeds=(0,),opponent_orders={0:[players[0]]*3})

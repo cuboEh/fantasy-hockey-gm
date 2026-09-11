@@ -3,12 +3,134 @@ from datetime import date
 import hashlib
 import json
 from pathlib import Path
+from dataclasses import replace
+from time import perf_counter
 
 from .draft import connect, settings
 from .draft_value import DraftPlayer, Exposure, RosterValue
 from .draft_planner import compare_turns
 from .draft_completion import complete_draft
 from .workload_review import validate_review
+
+
+def working_snapshot(path):
+    """Capture picks, player edits and revision in one SQLite read transaction."""
+    with connect(path) as db:
+        db.execute('BEGIN')
+        info=settings(db)
+        rows=[json.loads(r[0]) for r in db.execute('SELECT payload FROM players')]
+        picks=[dict(r) for r in db.execute('SELECT * FROM picks ORDER BY pick')]
+        revision=db.execute('SELECT COALESCE(MAX(id),0) FROM events').fetchone()[0]
+    return {**info,'board':{**info['board'],'players':rows},'picks':picks,'revision':revision}
+
+
+def working_players(board):
+    from .preparation import recommendation_restrictions
+    from .market import TEAM_ALIASES
+    from .scoring import number
+    as_of=date.fromisoformat(board['as_of'])
+    players=[];stresses={}
+    for row in board['players']:
+        for evidence in (row.get('projection_evidence'),row.get('yahoo')):
+            if evidence and evidence.get('as_of') and date.fromisoformat(evidence['as_of'])>as_of:raise ValueError('Future projection or market evidence')
+        baseline=downside=None
+        if not recommendation_restrictions(row,board):
+            baseline=Exposure(float(number(row['projected_games'],'games')),float(number(row['points_per_game'],'rate')));downside=baseline
+            review=row.get('review',{}).get('reference_scenarios')
+            if review and review.get('baseline_points') is not None and review.get('downside_points') is not None:
+                if date.fromisoformat(review['as_of'])>as_of:raise ValueError('Future scenario evidence')
+                base=float(number(review['baseline_points'],'case baseline'));low=float(number(review['downside_points'],'case downside'))
+                if base>0 and 0<=low<=base:
+                    ratio=low/base;downside=Exposure(baseline.games,baseline.rate*ratio)
+                    stresses[row['id']]={'factor':ratio,'as_of':review['as_of'],
+                        'basis':'Working FP scaled by earlier reviewed downside/base FP ratio. GP unchanged; conditional aggregate stress, not a new forecast.'}
+        yahoo=row.get('yahoo',{});adp=yahoo.get('adp')
+        players.append(DraftPlayer(row['id'],row['name'],TEAM_ALIASES.get(row['team'],row['team']),row['kind'],tuple(row['positions']),baseline,downside,float(adp) if adp is not None else None))
+    return players,stresses
+
+
+def compare_working(snapshot, schedule):
+    """Two-pick opportunity comparison using the frozen working forecast.
+
+    No historical outcomes, projection fitting or roster mutations. Documented
+    downside/base ratios are transferred as aggregate FP stresses, not GP changes
+    or estimated probabilities. The same next pick is retained under stress.
+    """
+    from .draft import snake_team
+    from .draft_planner import preferences, fits
+    from .market import season_key
+    started=perf_counter()
+    board=snapshot['board'];seat=snapshot['slot'];teams=snapshot['teams'];picks=snapshot['picks']
+    if seat is None:raise ValueError('Set your actual draft slot to compare picks')
+    if snake_team(len(picks)+1,teams)!=seat:raise ValueError('Compare picks when your team is on the clock')
+    if season_key(schedule['season'])!=season_key(board['season']):raise ValueError('Schedule season differs from board')
+    if not schedule.get('games'):raise ValueError('Schedule is empty')
+    as_of=date.fromisoformat(board['as_of'])
+    if any(date.fromisoformat(g['date'])<=as_of for g in schedule['games'].values()):raise ValueError('Draft schedule must follow the board date')
+    selected={p['player_id'] for p in picks}
+    source={p['id']:p for p in board['players']}
+    players,stresses=working_players(board)
+    mapping={p.id:p for p in players};own=[p['player_id'] for p in picks if p['team']==seat]
+    if any(mapping[pid].baseline is None for pid in own):raise ValueError('An owned player lacks a supported forecast or verified eligibility. Basic tracking remains available.')
+    value=RosterValue(players,schedule,board['roster_slots'],draft_opportunity=True)
+    if any(value.team_games[p.team]!=int(board['assumptions']['season_games']) for p in players if p.baseline):raise ValueError('Schedule does not contain a full season for every projected team')
+    legal=[p for p in players if p.id not in selected and p.baseline and fits(p,own,mapping,board['roster_slots'])]
+    if not legal:raise ValueError('No supported fitting candidates')
+    raw=max(legal,key=lambda p:(p.baseline.games*p.baseline.rate,p.id))
+    yahoo=min(legal,key=lambda p:(float(source[p.id].get('yahoo',{}).get('rank') or 1e9),p.id))
+    # Shared preference orders across every candidate branch. These are distinct
+    # hypotheses, not equally likely samples from an estimated distribution.
+    orders={};labels={}
+    for seed in (0,1):
+        orders[seed]=preferences(players,seed,'rank');labels[seed]=f'ADP order with 10% jitter, seed {seed}'
+    ranked=[replace(p,market_rank=float(source[p.id].get('yahoo',{}).get('rank') or 10000)) for p in players]
+    orders[2]=[mapping[p.id] for p in preferences(ranked,0,'rank')];labels[2]='Yahoo displayed rank with 10% jitter'
+    cautious=[replace(p,market_rank=float(source[p.id].get('yahoo',{}).get('rank') or 10000))
+              if float(source[p.id].get('yahoo',{}).get('percent_drafted') or 0)<50 else p for p in players]
+    orders[3]=[mapping[p.id] for p in preferences(cautious,1,'rank')];labels[3]='Low-drafted ADP replaced by displayed rank (sensitivity only)'
+    # Include the best incremental player as well as the raw-points and market
+    # baselines, so roster congestion can surface a player outside raw top tiers.
+    initial=value.evaluate(own)['points']
+    incremental=max(legal,key=lambda p:(value.evaluate(own+[p.id])['points']-initial,p.id))
+    result=compare_turns(players,picks,board['roster_slots'],teams,seat,value,seeds=tuple(orders),
+                         width=4,opponent_orders=orders,fixed_next_pick=True,
+                         include_ids=(raw.id,yahoo.id,incremental.id))
+    rows=result['candidates']
+    best={(i,case):max(r['branches'][i]['best_by_case'][case]['value']['points'] for r in rows)
+          for i in range(len(orders)) for case in ('baseline','downside')}
+    for row in rows:
+        p=mapping[row['id']];row['positions']=p.positions;row['team']=p.team
+        row['season_points']=p.baseline.games*p.baseline.rate
+        row['adp']=p.market_rank
+        row['stress']=stresses.get(p.id)
+        row['displaced_points']=max(0,row['season_points']-row['one_pick']['baseline']['gain'])
+        row['max_regret']=max(best[i,case]-b['best_by_case'][case]['value']['points'] for i,b in enumerate(row['branches']) for case in ('baseline','downside'))
+        row['scenarios_best']=sum(abs(best[i,'baseline']-b['best_by_case']['baseline']['value']['points'])<1e-7 for i,b in enumerate(row['branches']))
+        gains=[b['best_by_case']['baseline']['value']['points']-initial for b in row['branches']]
+        row['gain_range']=[min(gains),max(gains)]
+        row['next_options']=[{'scenario':labels[b['seed']], 'id':b['best_by_case']['baseline']['next_id'],
+                              'name':b['best_by_case']['baseline']['next_name'],'pair_gain':gains[i],
+                              'stress_gain':b['best_by_case']['downside']['value']['points']-result['initial']['downside']['points']}
+                             for i,b in enumerate(row['branches'])]
+    robust=min(rows,key=lambda r:(r['max_regret'],-r['two_pick_gain']['baseline'],r['id']))
+    refs={r['id']:r for r in rows}
+    result.update(model='working_two_pick_opportunity_v1',revision=snapshot['revision'],
+                  roster_aware_choice=incremental.id,points_choice=raw.id,yahoo_choice=yahoo.id,
+                  robust_choice=robust['id'],scenario_labels=labels,
+                  gain_vs_points=rows[0]['two_pick_gain']['baseline']-refs[raw.id]['two_pick_gain']['baseline'],
+                  gain_vs_yahoo=rows[0]['two_pick_gain']['baseline']-refs[yahoo.id]['two_pick_gain']['baseline'],
+                  stressed_player_count=len(stresses),as_of=board['as_of'],elapsed_seconds=perf_counter()-started,
+                  session_sha256=hashlib.sha256(json.dumps(snapshot,sort_keys=True).encode()).hexdigest(),
+                  schedule_sha256=hashlib.sha256(json.dumps(schedule,sort_keys=True).encode()).hexdigest())
+    result['warnings']=[
+        'Experimental two-pick comparison, not a complete-draft optimum or a proven competitive advantage.',
+        'Mean and ranges describe four chosen opponent hypotheses, not expected outcomes or calibrated survival probabilities.',
+        'Season-average appearance fractions are matched to daily slots. Known scratches, replacement during injuries and confirmed goalie starts are not modeled.',
+        'Goalie weekly qualification is deliberately separate: unfinished rosters are not penalized as finished teams. Verify the three-appearance minimum before completing your roster.',
+        'Downside scales current FP by documented earlier case ratios. The same later pick is retained. Unmodified players are not risk-free.',
+        'Bounded raw-value and positional shortlist, plus best current incremental option and baseline choices. Some two-player combinations are not searched.',
+        'Later bench construction, streaming, playoff weighting and changing roles are outside this comparison.']
+    return result
 
 
 def build_players(board,workloads,rates,as_of,context=None,case_map=None):
@@ -57,7 +179,9 @@ def build_players(board,workloads,rates,as_of,context=None,case_map=None):
 
 def register(commands):
     p=commands.add_parser('draft-plan',help='Experimental two-turn draft choices with separate workload scenarios')
-    for name in ('db','schedule','workloads','rates'):p.add_argument('--'+name,type=Path,required=True)
+    for name in ('db','schedule'):p.add_argument('--'+name,type=Path,required=True)
+    for name in ('workloads','rates'):p.add_argument('--'+name,type=Path)
+    p.add_argument('--working-board',action='store_true',help='Compare the frozen working forecasts with daily lineup opportunity')
     p.add_argument('--context',type=Path);p.add_argument('--case-map',type=Path)
     p.add_argument('--as-of',type=date.fromisoformat,required=True)
     p.add_argument('--opponents',choices=['rank','points','goalie_early'],default='rank')
@@ -95,6 +219,20 @@ def plan_session(path,schedule,workloads,rates,as_of,seeds=(0,1,2),style='rank',
 def handle(args):
     if args.output and args.output.exists():raise ValueError('Decision snapshot already exists; choose a new path')
     if args.limit<1:raise ValueError('Limit must be positive')
+    if args.working_board:
+        snapshot=working_snapshot(args.db)
+        if date.fromisoformat(snapshot['board']['as_of'])>args.as_of:raise ValueError('Board is after analysis date')
+        result=compare_working(snapshot,json.loads(args.schedule.read_text()))
+        if args.output:
+            args.output.parent.mkdir(parents=True,exist_ok=True)
+            with args.output.open('x') as out:json.dump(result,out,indent=2)
+        if args.json:print(json.dumps(result,indent=2));return 0
+        print(f"Pick {result['pick']} to {result['next_turn']}: experimental two-pick opportunity comparison")
+        for row in result['candidates'][:args.limit]:
+            print(f"{row['name']}: {row['one_pick']['baseline']['gain']:.1f} added now; {row['two_pick_gain']['baseline']:.1f} mean pair gain; {row['max_regret']:.1f} maximum scenario regret")
+        for warning in result['warnings']:print('NOTE: '+warning)
+        return 0
+    if not args.workloads or not args.rates:raise ValueError('Supply workload/rate inputs, or use --working-board')
     paths={k:getattr(args,k) for k in ('schedule','workloads','rates','context','case_map') if getattr(args,k)}
     inputs={k:json.loads(p.read_text()) for k,p in paths.items()}
     result=plan_session(args.db,inputs['schedule'],inputs['workloads'],inputs['rates'],args.as_of,args.seeds,args.opponents,inputs.get('context'),inputs.get('case_map'),args.method,args.case)

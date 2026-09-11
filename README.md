@@ -24,11 +24,16 @@ Set your slot, browse recommendations, search/filter players, record every team'
 picks, undo the last pick and download a SQLite backup. It shares the existing
 live draft session. All changes are local, not Yahoo actions.
 
+The dashboard also has an experimental **Pick now or wait?** comparison when you
+are on the clock. It considers incremental daily lineup value, later options and
+conditional downside. See [model and diagnostic results](docs/pick-comparison.md).
+
 The dashboard uses Python's standard library and a single local HTML page, with
 no new dependencies or external services. For another installation, start it with:
 
 ```sh
-uv run fantasy dashboard --db var/draft-mvp1-2026-09-11.sqlite --open
+uv run fantasy dashboard --db var/draft-mvp1-2026-09-11.sqlite \
+  --schedule var/schedule-20262027-2026-09-10.json --open
 ```
 
 Keep its server running while using the page. The desktop launcher starts a

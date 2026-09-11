@@ -4,6 +4,7 @@ import re
 import sqlite3
 import tempfile
 import threading
+from datetime import date, timedelta
 import unittest
 from urllib.error import HTTPError
 from urllib.request import Request, urlopen
@@ -19,10 +20,14 @@ class DashboardTests(unittest.TestCase):
         self.root=Path(self.tmp.name);self.path=self.root/'session.sqlite'
         board=self.root/'board.json'
         board.write_text(json.dumps({'schema_version':1,'model':'test','warnings':[],
+            'season':'2026-27','as_of':'2026-09-11','assumptions':{'season_games':60},
             'roster_slots':{'C':1,'LW':1,'G':1,'BN':1},
-            'players':[player(1,['C']),player(2,['LW']),player(3,['G'])]}))
+            'players':[player(1,['C']),player(2,['LW']),player(3,['G']),player(4,['C','LW']),
+                       player(5,['C']),player(6,['G']),player(7,['LW']),player(8,['C'])]}))
         draft.initialize(self.path,board,2,None)
-        self.server=make_server(self.path,0)
+        schedule=self.root/'schedule.json'
+        schedule.write_text(json.dumps({'season':'20262027','games':{str(i):{'date':(date(2026,10,1)+timedelta(days=i)).isoformat(),'teams':['AAA','BBB']} for i in range(60)}}))
+        self.server=make_server(self.path,0,schedule)
         self.thread=threading.Thread(target=self.server.serve_forever,daemon=True);self.thread.start()
         self.addCleanup(self.stop)
         self.url=f'http://127.0.0.1:{self.server.server_port}'
@@ -69,3 +74,16 @@ class DashboardTests(unittest.TestCase):
         for payload in ({'slot':True,'revision':0},{'slot':3,'revision':0},{'slot':1}):
             with self.assertRaises(HTTPError):self.post('slot',payload)
         self.assertEqual(self.get_state()['revision'],0)
+
+    def test_comparison_requires_slot_is_readonly_and_invalidates_on_pick(self):
+        with self.assertRaises(HTTPError):self.post('compare',{'revision':0})
+        self.post('slot',{'slot':1,'revision':0})
+        before=self.path.read_bytes()
+        result=self.post('compare',{'revision':1})
+        self.assertEqual(result['model'],'working_two_pick_opportunity_v1')
+        self.assertEqual(result['revision'],1)
+        self.assertEqual(self.path.read_bytes(),before)
+        self.assertEqual(self.post('compare',{'revision':1}),result)
+        self.post('pick',{'player':'nhl:1','revision':1})
+        with self.assertRaises(HTTPError):self.post('compare',{'revision':1})
+        with self.assertRaises(HTTPError):self.post('compare',{'revision':2})
