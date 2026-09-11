@@ -10,6 +10,18 @@ gaps. Start with `uv run fantasy draft-guide --db var/draft-14-reviewed.sqlite`.
 The board is provisional; Yahoo eligibility and rookie/workload projections still
 need review.
 
+
+## Player-specific contextual pilot, September 10
+
+The first [contextual scenario pilot](docs/contextual-scenarios.md) now separates
+reported evidence from analyst parameters for Tkachuk, Barkov, Jarvis and the
+Minnesota goalie tandem. It includes staged recovery, stat-specific role changes,
+joint goalie starts and separate starter/relief rates. Full private results are
+`var/context-pilot-2026-09-10-v3.md`. The current draft board remains unchanged;
+these conditional cases are not calibrated forecasts or selected recommendations.
+Next: verify deployment/recovery inputs, assess small-sample goalie rates, and
+compare useful lineup/IR replacement value before choosing a working projection.
+
 ## Project status
 
 Early local development. The developer submitted a Yahoo Fantasy Sports API access application on September 10, 2026; approval is pending. There is no deployed service or Yahoo connection.

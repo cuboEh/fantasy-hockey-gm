@@ -142,3 +142,5 @@ sensitivity checks, not evidence-based low/base/high forecasts or medical timeli
 The next step is dated deployment evidence for PP/non-PP exposure and joint goalie
 start allocation, then scenario assumptions that can be reviewed and backtested.
 The live board is unchanged by this report. All 72 tests pass.
+
+See [contextual scenarios](contextual-scenarios.md) for the completed first player-specific pilot and its remaining assumptions.
