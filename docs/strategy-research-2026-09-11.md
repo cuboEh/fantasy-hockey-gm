@@ -253,3 +253,14 @@ The ordinary ADP column is not labeled as Last 7 Days. Rank remains distinct
 from ADP. Season remains unconfirmed, and live rankings/eligibility have not
 changed. The free columns supply a useful candidate market baseline without
 requiring premium data.
+
+
+### Season confirmed
+
+Tristan confirmed the supplied table is for the rankings entering 2026-27.
+The season-confirmed snapshot is
+`snapshots/2026-09-11/yahoo-user-supplied/draft-analysis-20262027-confirmed.json`,
+with season ID `20262027`, user-confirmation provenance and a hash of the preceding
+snapshot. This supersedes the pending-season notes above. The receipt date is
+September 11, not an independently verified Yahoo publication timestamp.
+Identity/alias resolution and eligibility review remain pending before live import.
