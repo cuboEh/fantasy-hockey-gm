@@ -144,7 +144,9 @@ def opportunity_evaluator(pool,players,previous_season,slots):
     return marginal
 
 
-def run_year(seasons,target,config,team_counts=(12,13),seed=0,market=None,waiver_days=2,max_acquisitions=4):
+def run_year(seasons,target,config,team_counts=(14,),seed=0,market=None,waiver_days=2,max_acquisitions=4):
+    if not team_counts or len(set(team_counts)) != len(team_counts) or any(t < 2 or t > 32 for t in team_counts):
+        raise ValueError("Team counts must be unique integers from 2 through 32")
     players,history=prepare_history(seasons,target)
     if not history:raise ValueError('No pre-draft history')
     baseline=forecast(history,Model())
@@ -191,18 +193,20 @@ def main():
     p=argparse.ArgumentParser(description=__doc__)
     p.add_argument('--history-dir',type=Path,required=True);p.add_argument('--config',type=Path,required=True)
     p.add_argument('--seed',type=int,default=0)
+    p.add_argument('--teams',nargs='+',type=int,default=[14],help='League sizes to compare (default: 14)')
     p.add_argument('--years',nargs='+',type=int,required=True);p.add_argument('--output-dir',type=Path,required=True)
     p.add_argument('--waiver-days',type=int,default=2);p.add_argument('--max-acquisitions',type=int,default=4)
     p.add_argument('--market-csv',type=Path);p.add_argument('--draft-date',type=date.fromisoformat)
     args=p.parse_args();config=load_config(args.config)
     if args.market_csv and (len(args.years)!=1 or not args.draft_date):p.error('Market requires one target year and explicit draft date')
+    if len(set(args.teams)) != len(args.teams) or any(t < 2 or t > 32 for t in args.teams):p.error("Team counts must be unique integers from 2 through 32")
     years=range(min(args.years)-3,max(args.years)+1)
     seasons={y:json.loads((args.history_dir/f'history-{y}.json').read_text()) for y in years}
     args.output_dir.mkdir(parents=True,exist_ok=True)
     summaries={}
     for y in args.years:
         market=load_market(args.market_csv,seasons[y]['season'],args.draft_date) if args.market_csv else None
-        result=run_year(seasons,y,config,market=market,seed=args.seed,waiver_days=args.waiver_days,max_acquisitions=args.max_acquisitions)
+        result=run_year(seasons,y,config,team_counts=tuple(args.teams),market=market,seed=args.seed,waiver_days=args.waiver_days,max_acquisitions=args.max_acquisitions)
         result['config_sha256']=hashlib.sha256(args.config.read_bytes()).hexdigest()
         result['history_sha256']={str(k):hashlib.sha256((args.history_dir/f'history-{k}.json').read_bytes()).hexdigest() for k in range(y-3,y+1)}
         path=args.output_dir/f'season-{y}.json'

@@ -37,6 +37,8 @@ def main():
                 'positive_years':sum(row['policy_deltas'][m]>0 for row in year_rows),
                 'ordinary_season_mean':mean(row['policy_deltas'][m] for row in year_rows if row['ending_year'] not in {2020,2021})} for m in models}
     result={'years':year_rows,'summary':summary,'draft_scenarios':len(seen),
+            'team_counts':sorted({key[2] for key in seen}),
+            'seeds':sorted({key[4] for key in seen}),
             'streaming_mean':mean(row['streaming_delta'] for row in year_rows),
             'walk_forward_selection_mean':mean(row['selected_delta'] for row in year_rows),
             'warnings':['Reconstructed historical data with provider conflicts; not verified official fantasy outcomes',
@@ -48,7 +50,7 @@ def main():
     for r in year_rows:
         v=r['policy_deltas'];y=r['ending_year']
         lines.append(f"| {y-1}-{str(y)[-2:]} | {v['shrink20_workload0.5_points_cohort']:.1f} | {v['shrink0_workload0_replacement_fixed']:.1f} | {v['shrink0_workload0_usable_fixed']:.1f} | {r['streaming_delta']:.1f} |")
-    lines+=['','Four fixed-roster draft policies, two synthetic opponent seeds, three draft seats in each of 12/13-team leagues. Streaming is evaluated separately from the same baseline draft.','',
+    lines+=['',f"{len(models)} fixed-roster draft policies, {len(result['seeds'])} synthetic opponent seeds, league sizes {result['team_counts']}, with seats recorded per scenario. Streaming is evaluated separately from the same baseline draft.",'',
             'All target seasons are reconstructed from prior-season universes. Rookie coverage, pre-draft injuries, original schedule publication dates, actual Yahoo eligibility, opponent streaming and waiver competition remain limitations. Source disagreements are flagged.','',
             'No policy has been promoted to the live draft board. See docs/six-step-implementation.md for sources, rules and reproduction commands.']
     a.output.with_suffix('.md').write_text('\n'.join(lines)+'\n')

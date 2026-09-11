@@ -104,7 +104,7 @@ standings or playoff results.
 
 ## 4. Chronological expansion and evaluation
 
-The primary comparison runs 2015-16 through 2025-26, two opponent seeds, 12/13
+The earlier 12/13-team comparison runs 2015-16 through 2025-26, two opponent seeds, 12/13
 teams, and early/middle/late seats. Four policies yield 528 draft scenarios.
 Another 132 replays compare streaming with fixed management from baseline picks.
 Repeated seeds and seats share NHL outcomes and are not independent seasons.
@@ -172,7 +172,7 @@ uv run python -m fantasy_hockey.history --directory snapshots/NEW-DATE/sportsdat
   --output-dir var/new-history
 uv run python -m fantasy_hockey.seasonlab --history-dir var/new-history \
   --config config.local.toml --years 2016 2017 2018 2019 2020 2021 2022 2023 2024 2025 2026 \
-  --seed 0 --waiver-days 2 --max-acquisitions 4 --output-dir var/new-study-seed0
+  --teams 14 --seed 0 --waiver-days 2 --max-acquisitions 4 --output-dir var/new-study-seed0
 ```
 
 Repeat with seed 1 and a separate output directory. Then:
@@ -193,3 +193,25 @@ Remaining limits are source reconciliation, rookie and dated injury coverage,
 Yahoo historical eligibility, original schedule snapshots, competing active
 opponents, actual waiver priority, and user-specific playoff calendars. These
 are recorded limitations, not silently completed steps.
+
+## Current league size and opponent assumptions
+
+Tristan selected 14 teams on September 10. The season replay CLI now defaults
+to 14; `--teams 12 13` reproduces the earlier league-size scenarios explicitly.
+The local current tracker is `var/draft-14.sqlite`, with 16 rounds and 224 picks.
+Earlier databases and study outputs are preserved.
+
+Opponents follow a fixed ranking with persistent preference variation and roster
+fit constraints. They do not run our usable-game optimizer or anticipate our next
+pick. Without a dated market export, the ranking is a historical-points proxy,
+not Yahoo draft-room order. A permitted current Yahoo ranking/ADP export would
+make that behavior a closer match to friends choosing the next rated player.
+No extra strategic opponent complexity is planned for the immediate draft.
+
+The 14-team rerun covers 264 drafts across 2015-16 through 2025-26, four policies,
+two opponent seeds and seats 1, 7 and 14. Mean goalie-minimum-adjusted lineup
+points versus the baseline: usable-game drafting +426.5 (10/11 positive season
+averages), cohort workload -135.0, replacement -206.6. Separate streaming from
+the same baseline picks averaged +550.7; do not add this to draft-policy gains.
+Results remain research comparisons, with the limitations above. No model was
+promoted to the live board. Private details: `var/14-team-review.md`.

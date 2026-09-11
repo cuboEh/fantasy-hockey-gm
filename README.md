@@ -10,7 +10,7 @@ The local implementation includes league-specific scoring, explicit skater role 
 
 Start with the [draft-day guide](docs/draft-day.md). See the [broad source survey](docs/source-survey.md), [development instructions](docs/development.md), [data-source investigation](docs/data-sources.md), and [model design](docs/model-design.md).
 
-Next priorities are verified eligibility, documented workload and role adjustments, rookie coverage, and position-specific replacement value. A permitted independent projection export would provide a useful comparison. Team count and draft slot remain to be confirmed. Yahoo approval is not required for the offline board and tracker.
+Next priorities are verified eligibility, documented workload and role adjustments, rookie coverage, and position-specific replacement value. A permitted independent projection export would provide a useful comparison. The current league size is 14 teams; draft slot remains unknown. Historical simulations default to 14 teams, with other sizes available through `--teams`. Yahoo approval is not required for the offline board and tracker.
 
 Historical refinement has started: a [chronological draft experiment](docs/backtesting.md)
 compares eight projection/selection variants, locks the tuning-season winner,

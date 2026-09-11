@@ -9,10 +9,15 @@ import unittest
 from fantasy_hockey.backtest import Forecast
 from fantasy_hockey.history import assist_ids
 from fantasy_hockey.market import load_market
-from fantasy_hockey.seasonlab import prepare_history,replay_season
+from fantasy_hockey.seasonlab import prepare_history,replay_season,run_year
 
 
 class HistoricalTests(unittest.TestCase):
+    def test_invalid_league_sizes_fail_before_loading_history(self):
+        for sizes in ((), (1,), (33,), (14,14)):
+            with self.subTest(sizes=sizes), self.assertRaises(ValueError):
+                run_year({}, 2025, None, team_counts=sizes)
+
     def test_assist_formats_and_invalid_serialization(self):
         self.assertEqual(assist_ids('[{"playerId":1},{"playerId":2}]'),['1','2'])
         text='shape: (2,)\nSeries: \'\' [struct[6]]\n[\n{1,{"A"},x}\n{2,{"B"},x}\n]'
