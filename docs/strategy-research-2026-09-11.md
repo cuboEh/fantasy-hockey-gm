@@ -217,3 +217,16 @@ and percent drafted as separate fields wherever actually supplied. ADP describes
 market behavior; it does not establish value under this league's scoring or a
 calibrated probability of surviving until the next pick. No automated collection
 or ranking changes were made.
+
+
+### User-supplied table received
+
+Three pasted batches now supply 210 unique player names, retained under
+`snapshots/2026-09-11/yahoo-user-supplied/`. The cumulative file is
+`draft-analysis-first-210.json`; earlier versions are preserved. Team/position
+strings, integer rank, percent drafted, two decimal strings and extra status
+tokens are staged without changing live data. Column alignment and season remain
+unconfirmed. Decimal averages alone must not define opponent ordering, especially
+where drafted percentages differ sharply. Exact normalized-name comparison is
+only a candidate identity match; unmatched names and eligibility differences are
+recorded in `comparison-first-210.json`.
