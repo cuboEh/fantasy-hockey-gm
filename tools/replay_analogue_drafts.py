@@ -13,6 +13,7 @@ from fantasy_hockey.config import load_config
 from fantasy_hockey.seasonlab import prepare_history,replay_season,opportunity_evaluator
 from fantasy_hockey.board import dump_json
 from tools.score_matchups import compare
+from fantasy_hockey.goalie_coverage import coverage_evaluator
 
 
 def corrected_pools(baseline, annual, target, training):
@@ -52,9 +53,12 @@ def main():
         players,history=prepare_history(seasons,year);base=forecast(history,Model())
         work,full,details=corrected_pools(base,annual,year,training)
         policies={'baseline_points':(base,'points'),'baseline_usable':(base,'usable'),
-                  'analogue_workload':(work,'points'),'analogue_points':(full,'points'),'analogue_usable':(full,'usable')}
+                  'analogue_workload':(work,'points'),'analogue_points':(full,'points'),'analogue_usable':(full,'usable'),
+                  'baseline_coverage':(base,'coverage'),'analogue_coverage':(full,'coverage')}
         mappings={key:{p.id:p for p in pool} for key,(pool,_) in policies.items()}
         utilities={key:opportunity_evaluator(pool,players,seasons[year-1],slots) for key,(pool,strategy) in policies.items() if strategy=='usable'}
+        utilities.update({key:coverage_evaluator(pool,players,seasons[year-1],slots)
+                          for key,(pool,strategy) in policies.items() if strategy=='coverage'})
         records_by_id=defaultdict(list)
         for row in seasons[year]['records']:records_by_id[row['id']].append(row)
         cache={}
@@ -88,6 +92,8 @@ def main():
                     r['draft_only_delta']=r['fixed_lineups']['zero_goalie_penalty_scenario']-baseline['fixed_lineups']['zero_goalie_penalty_scenario']
                     r['total_delta']=r['own_lineups']['zero_goalie_penalty_scenario']-baseline['own_lineups']['zero_goalie_penalty_scenario']
                     r['lineup_effect']=r['total_delta']-r['draft_only_delta']
+                    r['failed_goalie_weeks']=r['own_lineups']['goalie_minimum_failed_weeks']
+                    r['goalies_drafted']=sum(mappings[r['policy']][p['id']].position=='G' for p in r['picks'] if p['team']==seat)
                     r['wins_delta']=r['own_matchups']['wins']-baseline['own_matchups']['wins']
                     runs.append(r)
         output={'year':year,'runs':runs,'forecast_details':details,
@@ -96,7 +102,7 @@ def main():
         (a.output_dir/f'season-{year}.json').write_text(dump_json(output))
         for r in runs:all_rows.append({k:v for k,v in r.items() if k not in {'picks','fixed_lineups','own_lineups'}})
         print('Completed',year,flush=True)
-    metrics=('draft_only_delta','total_delta','lineup_effect','wins_delta')
+    metrics=('draft_only_delta','total_delta','lineup_effect','wins_delta','failed_goalie_weeks','goalies_drafted')
     summary={name:{m:mean(r[m] for r in all_rows if r['policy']==name) for m in metrics} for name in policies}
     year_summary={year:{name:mean(r['total_delta'] for r in all_rows if r['year']==year and r['policy']==name) for name in policies} for year in a.years}
     report={'summary':summary,'year_summary':year_summary,'scenarios':len(all_rows),'rows':all_rows,
@@ -107,11 +113,13 @@ def main():
                         'Full-season point totals include flagged source conflicts; H2H excludes affected common weeks',
                         'Minimum three goalie appearances enforced; primary positions and reconstructed calendars remain limitations',
                         'No future training outcomes or own-player neighbors; historic data were already explored in research',
-                        'No current news/rookie universe, no causal injury/trade model, no automatic live model promotion']}
+                        'No current news/rookie universe, no causal injury/trade model, no automatic live model promotion',
+                        'Coverage credits reductions in expected forfeited points using independent prior-calendar start proxies; same-team starts mutually exclusive',
+                        'All utility policies retain the same top-12 fitting candidate shortlist; coverage is a heuristic, not global optimization']}
     (a.output_dir/'summary.json').write_text(dump_json(report))
     lines=['# Analogue draft and season replay','',*report['warnings'],'',
-           '| Policy | Draft-only FP change | Total FP change | Lineup effect | H2H win change |','| --- | ---: | ---: | ---: | ---: |']
-    for name,r in summary.items():lines.append(f"| {name} | {r['draft_only_delta']:+.1f} | {r['total_delta']:+.1f} | {r['lineup_effect']:+.1f} | {r['wins_delta']:+.2f} |")
+           '| Policy | Draft-only FP change | Total FP change | Lineup effect | H2H win change | Failed goalie weeks | Goalies drafted |','| --- | ---: | ---: | ---: | ---: | ---: | ---: |']
+    for name,r in summary.items():lines.append(f"| {name} | {r['draft_only_delta']:+.1f} | {r['total_delta']:+.1f} | {r['lineup_effect']:+.1f} | {r['wins_delta']:+.2f} | {r['failed_goalie_weeks']:.2f} | {r['goalies_drafted']:.2f} |")
     (a.output_dir/'summary.md').write_text('\n'.join(lines)+'\n');print(dump_json(summary))
 
 

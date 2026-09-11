@@ -19,6 +19,7 @@ def register(commands):
     p.add_argument('--db',type=Path,required=True)
     p.add_argument('--limit',type=int,default=15)
     p.add_argument('--json',action='store_true')
+    p.add_argument('--goalie-calendar',type=Path,help='Completed historical schedule JSON for experimental goalie insurance estimates')
 
 
 def handle(args):
@@ -37,10 +38,17 @@ def handle(args):
         print(f"Prepared {report['ranked']} estimates, {report['unranked']} unranked players; {report['market_coverage']} market matches.")
         print(args.output_dir)
         return 0
-    result = guidance(args.db,args.limit)
+    result = guidance(args.db,args.limit,goalie_calendar=args.goalie_calendar)
     if args.json:print(dump_json(result));return 0
     print(f"{result['teams']} teams | Your slot: {result['slot']} | Next picks: {result['upcoming_picks'][:4]}")
     print(f"Active roster needs: {result['active_needs']}")
+    coverage = result['goalie_coverage']
+    if coverage:
+        print('Goalie coverage: '+coverage.get('interpretation', coverage.get('reason', '')))
+        if not coverage['slot_known']:print('Set your draft slot to evaluate your owned goalie coverage.')
+        elif coverage.get('owned_goalies', 0):
+            for candidate in coverage['candidates'][:5]:
+                print(f"  {candidate['name']}: {candidate['insurance_points']:.1f} proxy insurance FP, check roster fit")
     for row in result['candidates']:
         points = '--' if row['projected_points'] is None else f"{float(row['projected_points']):.1f}"
         context = ', '.join(f"{p}: tier {v['tier']} ({v['same_tier_remaining']} left), depth surplus " + ('unknown' if v['active_depth_surplus'] is None else f"{v['active_depth_surplus']:+.1f}") for p,v in row['position_context'].items())

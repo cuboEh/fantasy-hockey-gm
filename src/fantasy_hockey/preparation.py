@@ -143,7 +143,7 @@ def audit(board: dict, teams: int = 14) -> dict:
             'review_queue':queue, 'watchlist':[p for p in players if p['projected_points'] is None]}
 
 
-def guidance(path: Path, limit: int = 15, tier_width: Decimal = Decimal(50)) -> dict:
+def guidance(path: Path, limit: int = 15, tier_width: Decimal = Decimal(50), goalie_calendar: Path | None = None) -> dict:
     """Descriptive draft advice; tiers use anchored 50-point bands per position."""
     if limit < 1 or tier_width <= 0:raise ValueError('Positive limit and tier width required')
     with connect(path) as db:
@@ -182,9 +182,20 @@ def guidance(path: Path, limit: int = 15, tier_width: Decimal = Decimal(50)) -> 
                      'review_required': bool(set(p['flags'])-{'reviewed'}),
                      'ten_fewer_appearances_point_change': -min(Decimal(10),number(p['projected_games'],'games'))*number(p['points_per_game'],'rate') if p['projected_points'] is not None else None,
                      'market_before_next_turn': (p['market']['value'] < upcoming[1]) if p.get('market') and len(upcoming)>1 else None})
-    return {'teams':teams,'slot':slot,'upcoming_picks':upcoming,'active_needs':needs if slot is not None else None,
+    coverage = None
+    if goalie_calendar is not None:
+        from .goalie_coverage import draft_coverage
+        calendar = json.loads(goalie_calendar.read_text())
+        if not calendar.get('games') or any(g['date'] >= info['board']['as_of'] for g in calendar['games'].values()):
+            raise ValueError('Goalie proxy calendar must contain only completed dates before board as-of')
+        coverage = draft_coverage(players, own_ids, selected, calendar, slots,
+                                  info['board']['assumptions']['season_games'])
+        coverage['calendar_sha256'] = hashlib.sha256(goalie_calendar.read_bytes()).hexdigest()
+        coverage['slot_known'] = slot is not None
+    return {'goalie_coverage':coverage,'teams':teams,'slot':slot,'upcoming_picks':upcoming,'active_needs':needs if slot is not None else None,
             'candidates':rows[:limit],'watchlist':[p for p in available if p['projected_points'] is None],
-            'warnings':['Sorted by baseline season points among fitting players; no experimental policy promotion',
+            'warnings':['Two goalie slots do not guarantee three active appearances per week; assess workload and coverage before filling the bench',
+                        'Sorted by baseline season points among fitting players; no experimental policy promotion',
                         'Tiers are 50-point positional bands, not confidence intervals',
                         'Depth surplus uses first player beyond league active-position demand, excludes bench demand and overlaps multi-position pools',
                         'Market-before-next-turn compares a rank/ADP number to a pick, not a probability of availability',

@@ -2,6 +2,14 @@
 
 A private, non-commercial fantasy hockey analytics tool being planned by an individual developer for personal use in one Yahoo Fantasy Hockey league.
 
+## Goalie coverage update
+
+The [weekly goalie coverage fix](docs/goalie-coverage.md) now credits protection
+against missed minimums in draft simulations. Across nine seasons, baseline
+missed weeks fell from 5.80 to 4.41, with +22 counted FP per season. Coverage
+advice is available in `draft-guide --goalie-calendar var/history-2026.json`;
+experimental results do not automatically change the live ranking.
+
 ## Current pre-draft work
 
 The [pre-draft readiness guide](docs/pre-draft-readiness.md) records the latest audit,
