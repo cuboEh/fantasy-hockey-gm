@@ -205,3 +205,37 @@ Before adding code or spending substantial compute, state the user decision it
 improves, the input that supports it, the smallest implementation, and the test that
 could show it failed. Existing work is retained when reusable, not expanded merely
 because it was expensive to build.
+
+## Deferred idea: NHL team concentration and diversification
+
+Recorded September 11, 2026 at Tristan's request. Explore after the core model is
+credible, alongside the deferred schedule-depth work. Do not implement a team cap,
+diversification bonus, or stacking penalty now.
+
+Question: when does spreading fantasy players across NHL teams improve usable
+production or weekly results, and when is a same-team stack worth retaining?
+
+Hypotheses to test:
+
+- Shared game nights and simultaneous quiet stretches can affect roster capacity
+  and weekly opportunity. Different NHL teams can also have overlapping schedules.
+- Linemates or power-play partners may produce together. Team-level changes may
+  also affect several owned players at once. Estimate these relationships rather
+  than treating teammates as independent or automatically undesirable.
+- Skater stacks, two goalies on one NHL team, and a skater-goalie combination have
+  different opportunity and risk structures. Evaluate them separately.
+- Weekly H2H points may favor different risk profiles depending on matchup state;
+  an underdog and a favored roster need not value correlated outcomes equally.
+- Roster concentration could matter differently over a full season, a streaming
+  window and the fantasy playoffs. Keep those horizons distinct.
+
+The existing lineup matcher already accounts for shared game nights and slot
+collisions. Any future concentration adjustment must not count the same lost games
+again. Correlation alone does not change the sum of expected points when marginal
+player expectations are fixed; evaluate variance and weekly win outcomes separately.
+Do not sacrifice a substantially better player merely to collect more team logos.
+
+Compare similar-value rosters with and without concentration, controlling for
+position, usable games, draft price and individual projections. Use dated,
+held-out evidence before promoting a diversification or stacking rule. The current
+priority remains source quality, workload/role review and model validation.

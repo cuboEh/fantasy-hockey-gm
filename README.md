@@ -18,6 +18,12 @@ the current MVP 1 priority.
 
 ## Latest model work
 
+The seven test picks have been cleared with a backup. The live session starts at
+pick 1, with your slot still unset. Seven priority players now have dated notes
+in their dashboard details; see the [evidence refresh](docs/priority-refresh-2026-09-11.md).
+Numerical forecasts are unchanged. NHL team diversification and stacking are
+recorded as deferred ideas in the product plan.
+
 The [validation report](docs/validation-2026-09-11.md) records the historical replay,
 fixed opponent-foresight and stale-player issues, forecast-error breakdown,
 and final-roster goalie tradeoffs. All 147 tests pass. Historical outcome coverage
