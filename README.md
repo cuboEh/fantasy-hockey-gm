@@ -2,6 +2,20 @@
 
 A private, non-commercial fantasy hockey analytics tool being planned by an individual developer for personal use in one Yahoo Fantasy Hockey league.
 
+## Draft planning and validation update
+
+The [draft planning guide](docs/two-turn-draft-planning.md) documents scenario-aware
+`fantasy draft-plan`, pick-now versus next-turn comparisons, starter-only goalie
+rates, and an explicit coverage alternative. Across 216 historical drafts, the
+new planner did not beat the existing coverage strategy against rank-following
+opponents, so it remains optional. Shrunken starter rates reduced historical
+rate error by 17%. All 14 seats passed complete draft/recovery rehearsals;
+116 tests pass. Current forecasts are frozen for prospective evaluation.
+
+Next: actual draft slot, Yahoo eligibility/rankings, missing rookie projections,
+and refreshed high-impact health/role evidence. The guide records remaining
+model limitations and reproducible commands. The live draft session is untouched.
+
 ## Goalie draft readiness
 
 The [completed goalie review](docs/goalie-review-complete.md) covers all 62 board

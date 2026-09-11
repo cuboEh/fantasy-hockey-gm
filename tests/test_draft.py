@@ -85,4 +85,16 @@ class DraftTests(unittest.TestCase):
         self.assertEqual(bad.returncode,2)
 
 
+    def test_export_rebuild_preserves_roster_order_and_assignment(self):
+        for pid in ('nhl:8','nhl:1','nhl:2','nhl:7'):draft.pick_player(self.path,pid)
+        before=draft.draft_board(self.path)
+        self.assertEqual([p['id'] for p in before['roster']],['nhl:8','nhl:7'])
+        exported=self.root/'snapshot.json';draft.export_draft(self.path,exported)
+        data=json.loads(exported.read_text())
+        source=self.root/'rebuild.json';source.write_text(json.dumps({**data['settings']['board'],'players':data['players']}))
+        restored=self.root/'restored.sqlite';draft.initialize(restored,source,2,1)
+        for pick in data['picks']:draft.pick_player(restored,pick['player_id'])
+        self.assertEqual(draft.draft_board(restored),before)
+
+
 if __name__=='__main__':unittest.main()

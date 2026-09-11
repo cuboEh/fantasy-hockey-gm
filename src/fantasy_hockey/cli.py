@@ -11,7 +11,7 @@ import sqlite3
 from .config import load_config
 from .scoring import score
 from .projections import project_payload
-from . import draft_cli, preparation_cli, goalie_weeks_cli
+from . import draft_cli, preparation_cli, goalie_weeks_cli, decision_cli
 
 
 def unique_object(pairs: list[tuple[str, object]]) -> dict[str, object]:
@@ -35,8 +35,11 @@ def main() -> int:
     draft_cli.register(commands)
     preparation_cli.register(commands)
     goalie_weeks_cli.register(commands)
+    decision_cli.register(commands)
     args = parser.parse_args()
     try:
+        if args.command == 'draft-plan':
+            return decision_cli.handle(args)
         if args.command == 'goalie-weeks':
             return goalie_weeks_cli.handle(args)
         if args.command in ('prepare-draft','draft-guide'):

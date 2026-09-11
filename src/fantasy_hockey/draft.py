@@ -161,7 +161,9 @@ def draft_board(path: Path, search: str = "", position: str | None = None, limit
         players = [json.loads(r[0]) for r in db.execute("SELECT payload FROM players")]
     selected = {p['player_id'] for p in picks}
     own_ids = {p['player_id'] for p in picks if p['team']==info['slot']}
-    own = [p for p in players if p['id'] in own_ids]
+    by_id = {p['id']:p for p in players}
+    own = [by_id[p['player_id']] for p in picks if p['team']==info['slot']]
+    # Pick order survives exports; database insertion order does not.
     slots = info['board']['roster_slots']
     assignment = roster_assignment(own,slots)
     candidates = []
