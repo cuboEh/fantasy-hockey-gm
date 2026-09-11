@@ -4,15 +4,18 @@ The first real-player board uses a historical-rate baseline, not a final trained
 forecast. Yahoo eligibility, current injury/role changes, uncertain workloads and
 rookies need review. The tracker performs local manual bookkeeping only.
 
+See [pre-draft readiness](pre-draft-readiness.md) for the latest reviewed board,
+imports, rehearsal results and unresolved inputs.
+
 ## Current artifacts
 
-- `var/draft-board.json`: normalized board, contributions, source flags and MoneyPuck context.
-- `var/draft-board.csv`: spreadsheet fallback, including unranked watchlist entries.
-- `var/draft-14.sqlite`: current 14-team session, initially empty with your slot unset. Older 12/13-team sessions are preserved.
+- `var/prepared-market-2026-09-10/board.json`: current prepared board, contributions, source flags, review notes and market proxy.
+- `var/prepared-market-2026-09-10/board-with-reviews.csv`: spreadsheet fallback, including unranked entries and review sources.
+- `var/draft-14-reviewed.sqlite`: current 14-team session, initially empty with your slot unset. Older 12/13-team sessions are preserved.
 - `var/baseline-diagnostic.json`: limited retrospective rate comparison, not a valid as-of backtest.
 
-All of these are private and ignored by Git. The current board has 461 historical
-baseline estimates and six unranked players without usable history. Source pool
+All of these are private and ignored by Git. The reviewed board has 461 historical
+baseline estimates and nine unranked players without usable history. Source pool
 coverage is incomplete. An unranked player is not a zero-value player.
 
 ## Reproduce the board
@@ -44,13 +47,13 @@ Run from the project directory. Use the current 14-team session.
 Your slot can be set when known; the example slot below is illustrative.
 
 ```sh
-uv run fantasy draft board --db var/draft-14.sqlite
-uv run fantasy draft set-slot --db var/draft-14.sqlite 7
-uv run fantasy draft board --db var/draft-14.sqlite --position D --limit 15
-uv run fantasy draft board --db var/draft-14.sqlite --search "McDavid" --json
-uv run fantasy draft pick --db var/draft-14.sqlite "Connor McDavid"
-uv run fantasy draft undo --db var/draft-14.sqlite
-uv run fantasy draft export --db var/draft-14.sqlite --output var/draft-backup.json
+uv run fantasy draft board --db var/draft-14-reviewed.sqlite
+uv run fantasy draft set-slot --db var/draft-14-reviewed.sqlite 7
+uv run fantasy draft board --db var/draft-14-reviewed.sqlite --position D --limit 15
+uv run fantasy draft board --db var/draft-14-reviewed.sqlite --search "McDavid" --json
+uv run fantasy draft pick --db var/draft-14-reviewed.sqlite "Connor McDavid"
+uv run fantasy draft undo --db var/draft-14-reviewed.sqlite
+uv run fantasy draft export --db var/draft-14-reviewed.sqlite --output var/draft-backup.json
 ```
 
 Record every team's picks, in order. Team ownership is computed from snake order;
@@ -71,7 +74,7 @@ Before your slot is known, fit is unset and the board is a general ranking.
 Primary NHL positions are not Yahoo eligibility. Record verified eligibility:
 
 ```sh
-uv run fantasy draft positions --db var/draft-14.sqlite "Player Name" \
+uv run fantasy draft positions --db var/draft-14-reviewed.sqlite "Player Name" \
   --eligible C,LW --note "Verified in Yahoo draft room on YYYY-MM-DD"
 ```
 

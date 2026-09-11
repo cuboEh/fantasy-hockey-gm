@@ -11,7 +11,7 @@ import sqlite3
 from .config import load_config
 from .scoring import score
 from .projections import project_payload
-from . import draft_cli
+from . import draft_cli, preparation_cli
 
 
 def unique_object(pairs: list[tuple[str, object]]) -> dict[str, object]:
@@ -33,8 +33,11 @@ def main() -> int:
     roles.add_argument("--config", type=Path, required=True)
     roles.add_argument("--input", type=Path, required=True)
     draft_cli.register(commands)
+    preparation_cli.register(commands)
     args = parser.parse_args()
     try:
+        if args.command in ('prepare-draft','draft-guide'):
+            return preparation_cli.handle(args)
         if args.command in ("build-board", "draft"):
             return draft_cli.handle(args)
         config = load_config(args.config)

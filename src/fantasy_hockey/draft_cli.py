@@ -20,7 +20,7 @@ def register(commands) -> None:
     build.add_argument('--csv',type=Path)
     command = commands.add_parser('draft',help='Local manual snake draft tracker')
     actions = command.add_subparsers(dest='action',required=True)
-    for action in ['init','board','pick','undo','set-slot','positions','export']:
+    for action in ['init','board','pick','undo','set-slot','positions','export','add-player']:
         sub = actions.add_parser(action)
         sub.add_argument('--db',type=Path,required=True)
         if action=='init':
@@ -39,6 +39,9 @@ def register(commands) -> None:
                 sub.add_argument('--note',required=True)
         elif action=='set-slot':
             sub.add_argument('slot',type=int)
+        elif action=='add-player':
+            sub.add_argument('--input',type=Path,required=True)
+            sub.add_argument('--as-of',type=date.fromisoformat,required=True)
         elif action=='export':
             sub.add_argument('--output',type=Path,required=True)
 
@@ -78,6 +81,10 @@ def handle(args) -> int:
     elif args.action=='positions':
         draft.set_positions(args.db,args.player,[p.strip() for p in args.eligible.split(',')],args.note)
         print('Updated local eligibility; evidence note saved.')
+    elif args.action=='add-player':
+        from .board import read_json
+        draft.add_player(args.db,read_json(args.input),args.as_of)
+        print('Added unranked player; existing picks preserved.')
     elif args.action=='export':
         if args.db.resolve()==args.output.resolve():
             raise ValueError('Export cannot overwrite the draft database')

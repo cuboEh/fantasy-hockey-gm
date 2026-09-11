@@ -2,6 +2,14 @@
 
 A private, non-commercial fantasy hockey analytics tool being planned by an individual developer for personal use in one Yahoo Fantasy Hockey league.
 
+## Current pre-draft work
+
+The [pre-draft readiness guide](docs/pre-draft-readiness.md) records the latest audit,
+reviewed 14-team tracker, ranking import, all-slot rehearsals and remaining data
+gaps. Start with `uv run fantasy draft-guide --db var/draft-14-reviewed.sqlite`.
+The board is provisional; Yahoo eligibility and rookie/workload projections still
+need review.
+
 ## Project status
 
 Early local development. The developer submitted a Yahoo Fantasy Sports API access application on September 10, 2026; approval is pending. There is no deployed service or Yahoo connection.

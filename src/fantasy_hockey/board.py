@@ -139,8 +139,9 @@ def build_board(path: Path, config: LeagueConfig, as_of: date,
     mp = load_moneypuck(moneypuck_dir)
     players = []
     seen = set()
-    for group, kind in (("players", "skater"), ("goalies", "goalie"), ("consensusOnly", "skater")):
+    for group, group_kind in (("players", "skater"), ("goalies", "goalie"), ("consensusOnly", "skater")):
         for row in data.get(group, []):
+            kind = "goalie" if group == "consensusOnly" and row.get("pos") == "G" else group_kind
             player_id = f"nhl:{row['id']}"
             if player_id in seen:
                 raise ValueError(f"Duplicate identity: {player_id}")
@@ -241,7 +242,7 @@ def build_board(path: Path, config: LeagueConfig, as_of: date,
 
 def export_csv(board: dict, path: Path) -> None:
     path.parent.mkdir(parents=True, exist_ok=True)
-    fields = ["rank", "id", "name", "team", "positions", "projected_games", "points_per_game", "projected_points", "flags", "model", "as_of", "source_generated", "source"]
+    fields = ["rank", "id", "name", "team", "positions", "projected_games", "points_per_game", "projected_points", "flags", "model", "as_of", "source_generated", "source", "market_metric", "market_value", "market_source", "market_as_of", "review_note", "review_source", "review_as_of"]
     with path.open("w", newline="", encoding="utf-8") as stream:
         writer = csv.DictWriter(stream, fieldnames=fields)
         writer.writeheader()
@@ -254,6 +255,12 @@ def export_csv(board: dict, path: Path) -> None:
                         "positions": "/".join(player["positions"]), "flags": "; ".join(player["flags"]),
                         "model": board["model"], "as_of": board["as_of"], "source_generated": board["source_generated"],
                         "source": board["source"]})
+            market = player.get("market") or {}
+            review = player.get("review") or {}
+            row.update({"market_metric":market.get("metric", ""), "market_value":market.get("value", ""),
+                        "market_source":market.get("source", ""), "market_as_of":market.get("as_of", ""),
+                        "review_note":review.get("note", ""), "review_source":review.get("source", ""),
+                        "review_as_of":review.get("as_of", "")})
             for key in ("projected_games", "points_per_game", "projected_points"):
                 row[key] = "" if player[key] is None else f"{number(player[key], key):.2f}"
             # Treat external text as text in spreadsheets, not executable formulas.

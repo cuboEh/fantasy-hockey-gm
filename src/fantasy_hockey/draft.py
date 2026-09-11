@@ -194,3 +194,17 @@ def export_draft(path: Path, destination: Path) -> None:
                    "events":[dict(r) for r in db.execute('SELECT * FROM events ORDER BY id')]}
     destination.parent.mkdir(parents=True,exist_ok=True)
     destination.write_text(dump_json(payload))
+
+
+def add_player(path: Path, item: dict, as_of) -> None:
+    """Record a missing verified identity without changing any existing picks."""
+    from .preparation import prepare
+    with connect(path) as db:
+        db.execute('BEGIN IMMEDIATE')
+        info=settings(db)
+        players=[json.loads(row[0]) for row in db.execute('SELECT payload FROM players')]
+        board={**info['board'],'players':players}
+        updated=prepare(board,as_of,{'additions':[item]})
+        player=next(p for p in updated['players'] if p['id']==item['id'])
+        db.execute('INSERT INTO players VALUES (?, ?)',(player['id'],dump_json(player)))
+        log(db,'add_player',item)

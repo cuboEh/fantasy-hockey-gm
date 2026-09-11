@@ -8,7 +8,11 @@ from .scoring import number
 def load_market(path: Path, season: str, draft_date: date):
     result={}
     with path.open(newline='') as stream:
-        for row in csv.DictReader(stream):
+        reader=csv.DictReader(stream)
+        required={'id','season','as_of','source','metric','value'}
+        if not required.issubset(reader.fieldnames or []):raise ValueError('Market CSV requires '+', '.join(sorted(required)))
+        for row in reader:
+            if any(not row.get(k) for k in required):raise ValueError('Market row has missing fields')
             if row['season']!=season or date.fromisoformat(row['as_of'])>draft_date:
                 raise ValueError('Market data season/date is incompatible with draft')
             if not row['source'] or row['metric'] not in {'adp','rank'}:
