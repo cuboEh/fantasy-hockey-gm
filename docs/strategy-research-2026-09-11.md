@@ -201,3 +201,19 @@ Research conclusion: the original slot-value objective remains sound. The order
 of development drifted toward optimizing a narrow goalie failure before we had
 established the right draft and management benchmarks. This review resets that
 order without claiming that an article has solved the league.
+
+
+## Yahoo draft-analysis source supplied by Tristan
+
+[Yahoo draft analysis](https://hockey.fantasysports.yahoo.com/hockey/draftanalysis)
+was supplied September 11 as a candidate draft-market source. Direct access from
+the research browser returned HTTP 429; current standard-draft rows, season and
+filters were not verified or imported. A search result exposed a salary-cap
+variant, which must not be substituted for snake-draft ADP.
+
+Next: inspect a user-supplied copy of the standard-draft table, including column
+headers and any season/format filters. Preserve average pick, Yahoo rank, position
+and percent drafted as separate fields wherever actually supplied. ADP describes
+market behavior; it does not establish value under this league's scoring or a
+calibrated probability of surviving until the next pick. No automated collection
+or ranking changes were made.
