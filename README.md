@@ -4,6 +4,14 @@ A local, private fantasy hockey draft and roster assistant for Tristan's Yahoo
 league. The goal is expected fantasy production from usable roster slots, under
 the league's scoring and constraints. Python and SQLite are sufficient.
 
+## Current goal and milestones
+
+The [product plan](docs/product-plan.md) is the current roadmap. MVP 1 is a dependable
+September 13 draft companion: a reviewed league-specific board, Yahoo market
+comparison, fitting shortlists and manual tracking. MVP 2 returns to weekly usable
+games, lineup and streaming advice. A measurable edge is the objective, not an
+established result. Deeper search stays parked while these deliverables are finished.
+
 ## Use the current workflow
 
 ```bash
