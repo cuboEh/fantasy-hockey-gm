@@ -7,6 +7,7 @@ from pathlib import Path
 from .draft import connect, settings
 from .draft_value import DraftPlayer, Exposure, RosterValue
 from .draft_planner import compare_turns
+from .draft_completion import complete_draft
 from .workload_review import validate_review
 
 
@@ -61,11 +62,13 @@ def register(commands):
     p.add_argument('--as-of',type=date.fromisoformat,required=True)
     p.add_argument('--opponents',choices=['rank','points','goalie_early'],default='rank')
     p.add_argument('--seeds',type=int,nargs='+',default=[0,1,2]);p.add_argument('--limit',type=int,default=6)
+    p.add_argument('--method',choices=['two-turn','completion'],default='two-turn')
+    p.add_argument('--case',choices=['baseline','downside'],default='baseline',help='Scenario for full-draft completion')
     p.add_argument('--output',type=Path,help='New immutable decision snapshot JSON')
     p.add_argument('--json',action='store_true')
 
 
-def plan_session(path,schedule,workloads,rates,as_of,seeds=(0,1,2),style='rank',context=None,case_map=None):
+def plan_session(path,schedule,workloads,rates,as_of,seeds=(0,1,2),style='rank',context=None,case_map=None,method='two-turn',case='baseline'):
     with connect(path) as db:
         info=settings(db);rows=[json.loads(r[0]) for r in db.execute('SELECT payload FROM players')]
         picks=[dict(r) for r in db.execute('SELECT * FROM picks ORDER BY pick')]
@@ -74,9 +77,14 @@ def plan_session(path,schedule,workloads,rates,as_of,seeds=(0,1,2),style='rank',
     if str(schedule['season'])!=board['season'][:4]+str(int(board['season'][:4])+1):raise ValueError('Schedule/board season mismatch')
     players,notes=build_players(board,workloads,rates,as_of,context,case_map)
     value=RosterValue(players,schedule,board['roster_slots'])
-    result=compare_turns(players,picks,board['roster_slots'],info['teams'],info['slot'],value,seeds,style)
+    if method=='completion':
+        result=complete_draft(players,picks,board['roster_slots'],info['teams'],info['slot'],value,seeds,style,case=case)
+    elif method=='two-turn':
+        result=compare_turns(players,picks,board['roster_slots'],info['teams'],info['slot'],value,seeds,style)
+    else:
+        raise ValueError('Unknown planning method')
     for row in result['candidates']:row['projection_notes']=notes.get(row['id'],{})
-    result['as_of']=as_of.isoformat();result['model']='two_turn_scenario_v1'
+    result['as_of']=as_of.isoformat();result.setdefault('model','two_turn_scenario_v1')
     result['session_state_sha256']=hashlib.sha256(json.dumps({'board':board,'picks':picks},sort_keys=True).encode()).hexdigest()
     result['warnings']+=['Starter rates replace per-appearance rates for goalies; relief starts/points are not added',
                         'Unmodified skaters have identical baseline/downside; scenario probabilities are not estimated',
@@ -89,13 +97,22 @@ def handle(args):
     if args.limit<1:raise ValueError('Limit must be positive')
     paths={k:getattr(args,k) for k in ('schedule','workloads','rates','context','case_map') if getattr(args,k)}
     inputs={k:json.loads(p.read_text()) for k,p in paths.items()}
-    result=plan_session(args.db,inputs['schedule'],inputs['workloads'],inputs['rates'],args.as_of,args.seeds,args.opponents,inputs.get('context'),inputs.get('case_map'))
+    result=plan_session(args.db,inputs['schedule'],inputs['workloads'],inputs['rates'],args.as_of,args.seeds,args.opponents,inputs.get('context'),inputs.get('case_map'),args.method,args.case)
     result['code_sha256']={p.name:hashlib.sha256(p.read_bytes()).hexdigest() for p in Path(__file__).parent.glob('*.py')}
     result['input_sha256']={k:hashlib.sha256(p.read_bytes()).hexdigest() for k,p in paths.items()}
     if args.output:
         args.output.parent.mkdir(parents=True,exist_ok=True)
         with args.output.open('x') as out:json.dump(result,out,indent=2)
     if args.json:print(json.dumps(result,indent=2));return 0
+    if args.method=='completion':
+        print(f"Pick {result['pick']} | experimental complete-draft rollout | {result['case']}")
+        print('Player                         Completed roster FP   Missed weeks')
+        for row in result['candidates'][:args.limit]:
+            print(f"{row['name']:30} {row['expected_points']:>19.1f} {row['expected_failed_weeks']:>14.1f}")
+        alt=next(r for r in result['candidates'] if r['id']==result['coverage_choice'])
+        print(f"Coverage alternative: {alt['name']}, {alt['expected_failed_weeks']:.1f} expected missed weeks, {alt['points_cost_vs_best']:.1f} FP cost among compared plans.")
+        for warning in result['warnings']:print('NOTE: '+warning)
+        return 0
     print(f"Pick {result['pick']}, next turn {result['next_turn']} | experimental two-turn plan")
     print('Player                         Baseline gain   Downside gain')
     for row in result['candidates'][:args.limit]:

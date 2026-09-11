@@ -22,6 +22,7 @@ from fantasy_hockey.goalie_rates import estimate_rates
 from fantasy_hockey.draft_value import DraftPlayer, Exposure, RosterValue
 from fantasy_hockey.draft_planner import preferences, shortlist, fits, compare_turns
 from fantasy_hockey.draft import snake_team
+from fantasy_hockey.draft_completion import complete_draft, continuation_utility
 
 POLICIES=('points_frozen','coverage_frozen','scenario_greedy','scenario_two_turn')
 
@@ -57,13 +58,23 @@ def play(policy,players,opponents,slots,seat,seed,style,value,legacy,base):
     order=[mapping[p.id] for p in order]
     rosters=defaultdict(list);taken=set();picks=[];seconds=0
     base_order=sorted(base,key=lambda p:(-p.points,p.id))
+    scenario_utility=continuation_utility(players,value) if policy=='starter_coverage' else None
     for n in range(1,14*sum(v for p,v in slots.items() if p not in {'IR','IR+'})+1):
         team=snake_team(n,14)
         if team!=seat:
             chosen=next(p for p in order if p.id not in taken and fits(p,rosters[team],mapping,slots))
         else:
             start=perf_counter()
-            if policy=='scenario_two_turn':
+            if policy=='scenario_completion':
+                # Planning uncertainty is independent of realized opponent preferences.
+                planning={10001:[mapping[p.id] for p in preferences(opponents,10001,style)]}
+                advice=complete_draft(players,picks,slots,14,seat,value,(10001,),style,
+                                      width=4,opponent_orders=planning)
+                chosen=mapping[advice['choice']]
+            elif policy=='starter_coverage':
+                candidates=shortlist([p for p in players if p.id not in taken],rosters[team],mapping,slots,width=4)
+                chosen=max(candidates,key=lambda p:(scenario_utility(p,rosters[team]),p.id))
+            elif policy=='scenario_two_turn':
                 advice=compare_turns(players,picks,slots,14,seat,value,(seed,),style,width=4,opponent_orders={seed:order})
                 chosen=mapping[advice['baseline_choice']]
             elif policy=='scenario_greedy':
@@ -84,12 +95,18 @@ def main():
     p.add_argument('--years',type=int,nargs='+',default=list(range(2015,2027)))
     p.add_argument('--styles',nargs='+',default=['rank','points','goalie_early'])
     p.add_argument('--seats',type=int,nargs='+',default=[1,7,14])
+    p.add_argument('--policies',nargs='+',choices=POLICIES+('starter_coverage','scenario_completion'),default=POLICIES)
+    p.add_argument('--seed',type=int,default=0)
     p.add_argument('--output-dir',type=Path,required=True)
     a=p.parse_args()
     if a.output_dir.exists():p.error('Use a new output directory')
+    policies=tuple(a.policies)
+    if 'scenario_completion' in policies and a.seed==10001:
+        p.error('Realized opponent seed must differ from completion planning seed 10001')
+    if len(set(policies))!=len(policies):p.error('Policies must be distinct')
     config=load_config(Path('config.local.toml'));slots=dict(config.slots)
     source_paths=list(Path('src/fantasy_hockey').glob('*.py'))+[Path(__file__)]
-    manifest={'policies':POLICIES,'years':a.years,'seats':a.seats,'styles':a.styles,'seed':0,
+    manifest={'policies':policies,'years':a.years,'seats':a.seats,'styles':a.styles,'seed':a.seed,'completion_planning_seed':10001,
               'prior_strength':20,'shortlist_width':4,'lineups':'same baseline forecasts for every replay',
               'source_sha256':{str(p):hashlib.sha256(p.read_bytes()).hexdigest() for p in source_paths},
               'warning':'Previously explored seasons; locked diagnostic specification, not untouched validation. No current role news in history.'}
@@ -110,8 +127,8 @@ def main():
         runs=[]
         for style in a.styles:
             for seat in a.seats:
-                for policy in POLICIES:
-                    picks,seconds=play(policy,players,opponents,slots,seat,0,style,value,legacy,base)
+                for policy in policies:
+                    picks,seconds=play(policy,players,opponents,slots,seat,a.seed,style,value,legacy,base)
                     ids=[r['id'] for r in picks if r['team']==seat]
                     season={**seasons[year],'records':[r for pid in ids for r in records[pid]]}
                     outcome=replay_season(season,picks,forecasts,metadata,slots,seat)
@@ -120,9 +137,9 @@ def main():
                          'failed_weeks':outcome['goalie_minimum_failed_weeks'],
                          'goalies_drafted':sum(forecasts[pid].kind=='goalie' for pid in ids)}
                     runs.append({**row,'picks':picks,'weeks':outcome['weeks']});all_rows.append(row)
-                group=runs[-len(POLICIES):]
+                group=runs[-len(policies):]
                 common=set.intersection(*({w for w,v in r['weeks'].items() if not v['source_conflicts']} for r in group))
-                for full,flat in zip(group,all_rows[-len(POLICIES):]):
+                for full,flat in zip(group,all_rows[-len(policies):]):
                     metrics={'common_clean_weeks':len(common),
                              'common_clean_points':sum(full['weeks'][w]['zero_goalie_penalty_scenario'] for w in common),
                              'common_clean_failed_weeks':sum(not full['weeks'][w]['goalie_minimum_met'] for w in common)}
@@ -130,7 +147,7 @@ def main():
                 print('Completed',year,style,seat,flush=True)
         (a.output_dir/f'season-{year}.json').write_text(json.dumps({'runs':runs,'unsupported_prior_team_ids':[p.id for p in players if p.team not in seasons[year-1]['team_games']]},indent=2))
         (a.output_dir/'rows.json').write_text(json.dumps(all_rows,indent=2))
-    summary={policy:{key:mean(r[key] for r in all_rows if r['policy']==policy) for key in ['counted_points','failed_weeks','goalies_drafted','decision_seconds','common_clean_points','common_clean_failed_weeks']} for policy in POLICIES}
+    summary={policy:{key:mean(r[key] for r in all_rows if r['policy']==policy) for key in ['counted_points','failed_weeks','goalies_drafted','decision_seconds','common_clean_points','common_clean_failed_weeks']} for policy in policies}
     (a.output_dir/'summary.json').write_text(json.dumps(summary,indent=2));print(json.dumps(summary,indent=2))
 
 

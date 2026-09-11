@@ -108,7 +108,11 @@ because its aggregate points look competitive. The coverage alternative was
 added as reporting after these runs and was not evaluated as a selection policy.
 
 These are diagnostic replays, not untouched holdouts or H2H win-rate estimates.
-Those historical seasons have been explored previously. Selection receives only
+Those historical seasons have been explored previously. The two-turn policy also
+received the exact synthetic opponent order used by its simulated draft, making
+availability more predictable than in practice. The follow-up
+[completed-roster experiment](completed-roster-planning.md) separates planning
+preferences from realized preferences. Selection receives only
 prior histories and prior schedules. Target outcomes are scored after drafting;
 all policies use the same frozen baseline daily-lineup estimates. There are no
 streams, current-news labels inserted retrospectively, or actual historical Yahoo

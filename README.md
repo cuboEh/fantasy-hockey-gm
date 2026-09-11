@@ -2,6 +2,19 @@
 
 A private, non-commercial fantasy hockey analytics tool being planned by an individual developer for personal use in one Yahoo Fantasy Hockey league.
 
+## Completed-roster experiment
+
+The [latest results](docs/completed-roster-planning.md) add full-draft rollouts,
+independent planning/opponent preferences, paired uncertainty reports and weekly
+all-play evaluation. Across 36 drafts over 12 seasons, completion matched the
+existing coverage strategy's points and missed 1.83 fewer goalie minimums, but
+results varied substantially by era. Its weekly all-play gain was only 0.32
+percentage points. No default strategy change is justified. All 118 tests pass.
+
+Use `draft-plan --method completion` with the documented inputs for optional
+advice. Next priorities are workload/context uncertainty, premium goalie opportunity
+cost, independent preseason projections, and your draft slot/Yahoo market inputs.
+
 ## Draft planning and validation update
 
 The [draft planning guide](docs/two-turn-draft-planning.md) documents scenario-aware
