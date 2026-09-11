@@ -111,3 +111,20 @@ class PreparationTests(unittest.TestCase):
         with output.open() as stream:row=next(csv.DictReader(stream))
         self.assertEqual(row['review_note'],"'=not a formula")
         self.assertEqual(row['review_source'],self.evidence['source'])
+
+    def test_goalie_workload_notes_do_not_change_draft_or_points(self):
+        path=self.root/'board.json';path.write_text(dump_json(self.board))
+        db=self.root/'draft.sqlite';draft.initialize(db,path,14,None)
+        player=next(p for p in self.board['players'] if p['kind']=='goalie')
+        evidence={'id':player['id'],'team':player['team'],'baseline_starts':20,
+                  'downside_starts':15,'evidence':{'date':'2026-09-09'}}
+        review={'season':self.board['season'],'as_of':'2026-09-10','goalies':[evidence]}
+        source=self.root/'workloads.json';source.write_text(json.dumps(review))
+        original=db.read_bytes();result=guidance(db,limit=100,goalie_workloads=source)
+        row=next(p for p in result['candidates'] if p['id']==player['id'])
+        self.assertEqual(row['goalie_workload_review']['baseline_starts'],20)
+        self.assertEqual(str(row['projected_points']),str(player['projected_points']))
+        self.assertEqual(db.read_bytes(),original)
+        review['goalies'][0]['evidence']['date']='2026-09-11'
+        source.write_text(json.dumps(review))
+        with self.assertRaises(ValueError):guidance(db,goalie_workloads=source)

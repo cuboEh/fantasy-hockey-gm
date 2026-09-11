@@ -19,6 +19,7 @@ def register(commands):
     p.add_argument('--db',type=Path,required=True)
     p.add_argument('--limit',type=int,default=15)
     p.add_argument('--json',action='store_true')
+    p.add_argument('--goalie-workloads',type=Path,help='Dated goalie role and workload review JSON')
     p.add_argument('--goalie-calendar',type=Path,help='Completed historical schedule JSON for experimental goalie insurance estimates')
 
 
@@ -38,7 +39,7 @@ def handle(args):
         print(f"Prepared {report['ranked']} estimates, {report['unranked']} unranked players; {report['market_coverage']} market matches.")
         print(args.output_dir)
         return 0
-    result = guidance(args.db,args.limit,goalie_calendar=args.goalie_calendar)
+    result = guidance(args.db,args.limit,goalie_calendar=args.goalie_calendar,goalie_workloads=args.goalie_workloads)
     if args.json:print(dump_json(result));return 0
     print(f"{result['teams']} teams | Your slot: {result['slot']} | Next picks: {result['upcoming_picks'][:4]}")
     print(f"Active roster needs: {result['active_needs']}")
@@ -56,6 +57,10 @@ def handle(args):
         if row.get('market'):print(f"  Market: {row['market']['metric']} {row['market']['value']} ({row['market']['source']})")
         if row['points_per_game'] is not None:
             print(f"  {float(row['projected_games']):.1f} projected appearances; {float(row['points_per_game']):.2f} FP/game; ten fewer appearances: {row['ten_fewer_appearances_point_change']:.1f} FP (scenario only)")
+        if row.get('goalie_workload_review'):
+            review = row['goalie_workload_review']
+            print(f"  Workload review: {review['review_status']}; baseline/downside start scenarios: {review['baseline_starts']}/{review['downside_starts']}. Analyst assumptions, not reported projections.")
+            if review.get('evidence'):print('  '+review['evidence']['fact']+' | '+review['evidence']['source'])
         print('  Review: '+', '.join(row['flags']))
         if row.get('review'):print('  '+row['review']['note']+' | '+row['review']['source'])
     print('Unranked watchlist: '+', '.join(p['name'] for p in result['watchlist']))

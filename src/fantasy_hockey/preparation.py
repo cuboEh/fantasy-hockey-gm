@@ -143,7 +143,7 @@ def audit(board: dict, teams: int = 14) -> dict:
             'review_queue':queue, 'watchlist':[p for p in players if p['projected_points'] is None]}
 
 
-def guidance(path: Path, limit: int = 15, tier_width: Decimal = Decimal(50), goalie_calendar: Path | None = None) -> dict:
+def guidance(path: Path, limit: int = 15, tier_width: Decimal = Decimal(50), goalie_calendar: Path | None = None, goalie_workloads: Path | None = None) -> dict:
     """Descriptive draft advice; tiers use anchored 50-point bands per position."""
     if limit < 1 or tier_width <= 0:raise ValueError('Positive limit and tier width required')
     with connect(path) as db:
@@ -151,6 +151,17 @@ def guidance(path: Path, limit: int = 15, tier_width: Decimal = Decimal(50), goa
         players = [json.loads(row[0]) for row in db.execute('SELECT payload FROM players')]
         picks = [dict(row) for row in db.execute('SELECT * FROM picks ORDER BY pick')]
     slots = info['board']['roster_slots']; teams = info['teams']; slot = info['slot']
+    if goalie_workloads is not None:
+        workloads = json.loads(goalie_workloads.read_text())
+        if workloads['season'] != info['board']['season'] or workloads['as_of'] > info['board']['as_of']:
+            raise ValueError('Workload review season/date differs from board')
+        reviews = {g['id']:g for g in workloads['goalies']}
+        for player in players:
+            if player['id'] in reviews:
+                review = reviews[player['id']]
+                if review['team'] != player['team']:raise ValueError('Workload review team differs from board')
+                if review.get('evidence') and review['evidence']['date'] > info['board']['as_of']:raise ValueError('Future workload source')
+                player['goalie_workload_review'] = review
     selected = {p['player_id'] for p in picks}
     own_ids = {p['player_id'] for p in picks if p['team']==slot}
     own = [p for p in players if p['id'] in own_ids]
