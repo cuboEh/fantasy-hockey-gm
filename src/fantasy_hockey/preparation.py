@@ -155,6 +155,9 @@ def guidance(path: Path, limit: int = 15, tier_width: Decimal = Decimal(50), goa
         workloads = json.loads(goalie_workloads.read_text())
         if workloads['season'] != info['board']['season'] or workloads['as_of'] > info['board']['as_of']:
             raise ValueError('Workload review season/date differs from board')
+        if workloads.get('review_version') == 2:
+            from .workload_review import validate_review
+            validate_review(workloads,date.fromisoformat(info['board']['as_of']))
         reviews = {g['id']:g for g in workloads['goalies']}
         for player in players:
             if player['id'] in reviews:

@@ -17,6 +17,9 @@ def register(commands):
 
 
 def report(schedule, workloads, ids, case, as_of):
+    if workloads.get('review_version') == 2:
+        from .workload_review import validate_review
+        validate_review(workloads,as_of)
     if not ids:raise ValueError('Select at least one goalie')
     if case not in {'baseline','downside'}:raise ValueError('Unknown workload case')
     if workloads['season'].replace('-','') != str(schedule['season'])[:4]+str(schedule['season'])[-2:]:

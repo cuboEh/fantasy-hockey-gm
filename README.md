@@ -4,10 +4,9 @@ A private, non-commercial fantasy hockey analytics tool being planned by an indi
 
 ## Goalie draft readiness
 
-The [role and schedule review](docs/goalie-draft-readiness.md) adds a validated
-1,344-game upcoming calendar, 20 source-backed workload scenarios, and the
-`fantasy goalie-weeks` command. The review queue includes 42 remaining unreviewed
-or unallocated goalies. Draft-guide review notes are read-only; scenario outputs
+The [completed goalie review](docs/goalie-review-complete.md) covers all 62 board
+goalies: 61 conditional scenarios and one unresolved current job. Use the v2
+workload file with the validated 1,344-game calendar and `fantasy goalie-weeks`. Draft-guide review notes are read-only; scenario outputs
 do not replace the baseline ranking. See the guide for commands and caveats
 about unconfirmed Yahoo matchup boundaries.
 

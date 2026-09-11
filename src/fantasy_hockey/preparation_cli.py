@@ -60,6 +60,7 @@ def handle(args):
         if row.get('goalie_workload_review'):
             review = row['goalie_workload_review']
             print(f"  Workload review: {review['review_status']}; baseline/downside start scenarios: {review['baseline_starts']}/{review['downside_starts']}. Analyst assumptions, not reported projections.")
+            if review.get('role'):print(f"  Role: {review['role']}; health: {review.get('health_status', 'not assessed')}; recheck by {review['review_by']}")
             if review.get('evidence'):print('  '+review['evidence']['fact']+' | '+review['evidence']['source'])
         print('  Review: '+', '.join(row['flags']))
         if row.get('review'):print('  '+row['review']['note']+' | '+row['review']['source'])

@@ -1,5 +1,8 @@
 # Goalie roles and the actual schedule, September 10, 2026
 
+The initial review below is preserved as history. The [completed review](goalie-review-complete.md)
+now covers all 62 goalies; use `private/goalie-workload-review-2026-09-10-v2.json`.
+
 There is now a reproducible local command to evaluate a goalie combination on
 the upcoming schedule. The draft guide can also display dated workload review
 notes alongside its baseline rankings. No live player projections were replaced.
