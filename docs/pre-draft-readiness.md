@@ -125,3 +125,20 @@ Validation: 71 tests pass. The separate shadow comparison changed the top choice
 at 4 of 56 opening-round checkpoints. This is a disagreement audit, not a test
 of actual 2026-27 outcomes. The CSV fallback includes source-linked review notes
 and ranking provenance, with spreadsheet formula injection protection.
+
+## Contextual review is a core requirement
+
+Tristan emphasized that changing roles, recovery, and opportunity are a primary
+reason to build this tool. Treat contextual review as part of projection design,
+not an optional generic rating bonus. A trade by itself does not justify a downgrade.
+Separate verified events, expected deployment changes, stat effects, and confidence.
+Keep conflicting evidence and review dates visible. Avoid counting the same role
+change in both an appearance adjustment and a second arbitrary bonus/penalty.
+
+The first private review is `var/context-review-2026-09-10-v2.md`, covering four
+cases with sourced facts and unresolved deployment questions. Its numerical cases
+are historical workload plus/minus ten appearances at fixed rates. They are
+sensitivity checks, not evidence-based low/base/high forecasts or medical timelines.
+The next step is dated deployment evidence for PP/non-PP exposure and joint goalie
+start allocation, then scenario assumptions that can be reviewed and backtested.
+The live board is unchanged by this report. All 72 tests pass.
