@@ -68,6 +68,8 @@ def prepare(board: dict, as_of: date, dossier: dict | None = None,
         if item.get('status') not in {'injury_review','role_review','identity_review','reviewed'}:
             raise ValueError('Unsupported review status')
         player = rows[pid]
+        if player.get('review'):
+            player.setdefault('review_history', []).append(player['review'])
         player['review'] = item
         player['flags'] = sorted(set(player['flags']) | {item['status']})
         if 'positions' in item:
@@ -79,6 +81,13 @@ def prepare(board: dict, as_of: date, dossier: dict | None = None,
             player['positions'] = list(dict.fromkeys(positions))
             player['position_source'] = item['source']
             player['flags'].remove('eligibility_unverified') if 'eligibility_unverified' in player['flags'] else None
+        if 'team' in item:
+            if not item['team'] or not item.get('team_source'):
+                raise ValueError('Team correction requires a team and supporting source')
+            player['previous_team'] = player.get('team')
+            player['team'] = item['team']
+        if 'yahoo' in item:
+            player['yahoo'] = deepcopy(item['yahoo'])
     seen = set()
     for item in dossier.get('projections', []):
         evidence(item, board['season'], as_of)
@@ -97,7 +106,7 @@ def prepare(board: dict, as_of: date, dossier: dict | None = None,
             raise ValueError('Goalie wins/shutouts exceed appearances')
         if player['kind']=='skater' and number(stats.get('power_play_points',0),'PPP') > number(stats.get('goals',0),'goals')+number(stats.get('assists',0),'assists'):
             raise ValueError('Power-play points exceed goals plus assists')
-        player['baseline_projection'] = {k:player.get(k) for k in ('projected_points','projected_games','points_per_game')}
+        player['baseline_projection'] = {k:deepcopy(player.get(k)) for k in ('projected_points','projected_games','points_per_game','stats','contributions','projection_evidence')}
         player.update(projected_points=scored.total, projected_games=games,
                       points_per_game=scored.total/games, stats=item['stats'],
                       contributions={c.stat:c.points for c in scored.contributions}, projection_evidence=item)
@@ -108,16 +117,33 @@ def prepare(board: dict, as_of: date, dossier: dict | None = None,
         raise ValueError('Unmatched market IDs: '+', '.join(sorted(set(market)-set(rows))))
     if len({(r['metric'],r['source'],r['as_of']) for r in market.values()}) > 1:
         raise ValueError('Use one dated market ranking series per board, not mixed rankings/ADP')
+    if market_path is not None:
+        for player in rows.values():
+            player.pop('market', None)
+            player['adp'] = None
     for pid, item in market.items():
         rows[pid]['market'] = item
         rows[pid]['adp'] = item['value'] if item['metric']=='adp' else None
     result['players'] = sorted(rows.values(), key=point_order)
+    result['as_of'] = as_of.isoformat()
     result['preparation'] = {'as_of':as_of.isoformat(), 'market_rows_imported':len(market),
                              'market_sha256':hashlib.sha256(market_path.read_bytes()).hexdigest() if market_path else None}
     result['warnings'].append('Preparation notes are review evidence; tiers and scarcity are descriptive, not calibrated probabilities')
     if seen:
         result['model'] += '_with_supplied_projections'
     return result
+
+
+def recommendation_restrictions(player: dict, board: dict) -> list[str]:
+    reasons = []
+    if player.get('projected_points') is None:
+        reasons.append('No complete projection')
+    if board.get('recommendation_policy') == 'yahoo_and_supplied_projection':
+        if 'eligibility_unverified' in player['flags']:
+            reasons.append('Yahoo eligibility not supplied')
+        if not player.get('projection_evidence'):
+            reasons.append('No reviewed independent projection')
+    return reasons
 
 
 def point_order(player):
@@ -137,6 +163,7 @@ def audit(board: dict, teams: int = 14) -> dict:
               'id':p['id'],'name':p['name'],'flags':p['flags'], 'review':p.get('review')}
              for i,p in enumerate(players,1) if p['flags']]
     return {'players':len(players),'ranked':len(ranked),'unranked':len(players)-len(ranked),
+            'recommendable':sum(not recommendation_restrictions(p,board) for p in players),
             'errors':errors,'flag_counts':dict(Counter(f for p in players for f in p['flags'])),
             'market_coverage':sum(bool(p.get('market')) for p in players),
             'active_position_demand':{pos:teams*n for pos,n in board['roster_slots'].items() if pos in POSITIONS},
@@ -176,8 +203,10 @@ def guidance(path: Path, limit: int = 15, tier_width: Decimal = Decimal(50), goa
     total = sum(n for p,n in slots.items() if p not in {'IR','IR+'})*teams
     upcoming = [i for i in range(len(picks)+1,total+1) if snake_team(i,teams)==slot]
     rows = []
-    position_pools = {pos:sorted((p for p in players if pos in p['positions'] and p['projected_points'] is not None),key=point_order) for pos in active_slots}
-    for p in available:
+    position_pools = {pos:sorted((p for p in players if pos in p['positions'] and not recommendation_restrictions(p,info['board'])),key=point_order) for pos in active_slots}
+    fitting = [p for p in available if slot is None or len(roster_assignment(own+[p],slots)) == len(own)+1]
+    supported = [p for p in fitting if not recommendation_restrictions(p, info['board'])]
+    for p in supported:
         if slot is not None and len(roster_assignment(own+[p],slots)) != len(own)+1:continue
         positions = {}
         for pos in p['positions']:
@@ -195,7 +224,16 @@ def guidance(path: Path, limit: int = 15, tier_width: Decimal = Decimal(50), goa
         rows.append({**p,'position_context':positions,
                      'review_required': bool(set(p['flags'])-{'reviewed'}),
                      'ten_fewer_appearances_point_change': -min(Decimal(10),number(p['projected_games'],'games'))*number(p['points_per_game'],'rate') if p['projected_points'] is not None else None,
-                     'market_before_next_turn': (p['market']['value'] < upcoming[1]) if p.get('market') and len(upcoming)>1 else None})
+                     'market_before_next_turn': (number(p['market']['value'],'market value') < upcoming[1]) if p.get('market') and len(upcoming)>1 else None})
+        rows[-1]['later_market_alternatives'] = {
+            pos: [{'id':q['id'], 'name':q['name'], 'points':q['projected_points'],
+                   'adp':q['market']['value'], 'percent_drafted':q.get('yahoo',{}).get('percent_drafted'),
+                   'points_cost':number(p['projected_points'],'points')-number(q['projected_points'],'points')}
+                  for q in supported if pos in q['positions'] and q['id'] != p['id']
+                  and p.get('market',{}).get('metric') == 'adp'
+                  and q.get('market',{}).get('metric') == 'adp'
+                  and number(q['market']['value'],'ADP') > number(p['market']['value'],'ADP')][:2]
+            for pos in p['positions']}
     coverage = None
     if goalie_calendar is not None:
         from .goalie_coverage import draft_coverage
@@ -207,10 +245,14 @@ def guidance(path: Path, limit: int = 15, tier_width: Decimal = Decimal(50), goa
         coverage['calendar_sha256'] = hashlib.sha256(goalie_calendar.read_bytes()).hexdigest()
         coverage['slot_known'] = slot is not None
     return {'goalie_coverage':coverage,'teams':teams,'slot':slot,'upcoming_picks':upcoming,'active_needs':needs if slot is not None else None,
-            'candidates':rows[:limit],'watchlist':[p for p in available if p['projected_points'] is None],
+            'candidates':rows[:limit],
+            'position_options':{pos:next((p for p in rows if pos in p['positions']),None) for pos in active_slots},
+            'watchlist':sorted(({**p,'restrictions':recommendation_restrictions(p,info['board'])} for p in available if recommendation_restrictions(p,info['board'])),
+                              key=lambda p:float(p.get('market',{}).get('value',9999))),
             'warnings':['Two goalie slots do not guarantee three active appearances per week; assess workload and coverage before filling the bench',
-                        'Sorted by baseline season points among fitting players; no experimental policy promotion',
+                        'Sorted by working season points among supported fitting players; no calibrated optimal-draft claim',
                         'Tiers are 50-point positional bands, not confidence intervals',
                         'Depth surplus uses first player beyond league active-position demand, excludes bench demand and overlaps multi-position pools',
                         'Market-before-next-turn compares a rank/ADP number to a pick, not a probability of availability',
-                        'An injury review note does not adjust projected appearances; inspect it before choosing']}
+                        'Provider projections may already adjust injuries; review notes and conditional cases are not applied again',
+                        'Later ADP alternatives are comparisons, not promised availability; low drafted percentages weaken ADP interpretation']}

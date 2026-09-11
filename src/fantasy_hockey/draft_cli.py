@@ -98,12 +98,13 @@ def handle(args) -> int:
             print(dump_json(board)); return 0
         print(f"{board['model']} | {board['teams']} teams | Pick {board['pick']} | On clock: {board['on_clock']}")
         print(f"Your slot: {board['slot']} | Your next pick: {board['your_next_pick']} | Players remaining: {board['remaining_count']}")
-        print('PROVISIONAL: historical carry-forward; Yahoo eligibility and role/injury adjustments need review.')
+        print('PROVISIONAL: working estimates are unvalidated. Use draft-guide for sources, risks and later alternatives.')
         print(f"{'ID':14} {'Player':25} {'Team':5} {'Pos':8} {'GP':>6} {'FP/GP':>7} {'FP':>8} {'Fits':5}")
         for p in board['candidates']:
             values=['--' if p[k] is None else f"{number(p[k],k):.1f}" for k in ['projected_games','points_per_game','projected_points']]
             print(f"{p['id']:14} {p['name'][:25]:25} {str(p['team']):5} {'/'.join(p['positions']):8} {values[0]:>6} {values[1]:>7} {values[2]:>8} {str(p['fits_roster']):5}")
-        print('Sorted by baseline season points among players who fit, not a full draft optimizer. Use --json for evidence and flags.')
+            if p['recommendation_restrictions']:print('  WATCHLIST: '+ '; '.join(p['recommendation_restrictions']))
+        print('Supported fitting players first, sorted by working season points. This is not a full draft optimizer.')
         if board['roster']:
             print('Your roster: '+', '.join(f"{p['name']} ({board['assignment'].get(p['id'],'unassigned')})" for p in board['roster']))
     return 0

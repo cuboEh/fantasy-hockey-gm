@@ -60,13 +60,25 @@ and transparent shortlist are more valuable than an elaborate unvalidated search
 6. The actual draft slot is set when known, and the guide describes a simple
    draft-day workflow. The draft time is still needed for operational planning.
 
-Current state: scorer, comparison, tracker, schedule logic and conditional scenarios
-exist. Yahoo's supplied table contains 390 matched identities and 264 ADP pairs;
-125 eligibility differences are reviewed in the comparison but not yet merged into
-the live tracker. There are 52 missing baseline estimates and two team conflicts.
-The product is therefore close in mechanics, but not yet a finalized draft board.
+Current state, September 11: MVP 1's board and operational workflow are ready.
+The new session imports all 390 supplied Yahoo identities/eligibility entries and
+264 ADPs. A permitted DtZ projection export supplies 373 fully supported Yahoo
+players, including every supplied ADP at or below 100. Unsupported entries remain
+an explicit watchlist. Two current-team conflicts were resolved; stale provider
+team projections are still restricted. The historical baseline and conditional
+cases remain comparisons, not silently blended forecasts.
 
-## Ordered pre-draft work
+The exact board passed a persisted 224-pick rehearsal, all 16 practice guide turns,
+undo/re-entry, database-copy recovery and export. All 131 tests pass. No historical
+season campaign was rerun. Actual slot and draft start time remain unknown, so
+operational item 6 remains pending. Refresh health/role evidence before the draft.
+See [draft-day guide](draft-day.md) for artifacts, source limitations and commands.
+
+## Pre-draft work, implementation completed September 11
+
+The four implementation steps below are complete for the frozen board. Keep them
+as the refresh procedure when material inputs change; do not restart the research
+program. Slot/time and draft-day evidence refresh remain operational follow-ups.
 
 1. **Resolve input problems that change picks.** Address the Evangelista/Tolvanen
    team conflicts, integrate the reviewed Yahoo eligibility, and prioritize missing

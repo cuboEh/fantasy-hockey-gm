@@ -155,6 +155,7 @@ def roster_assignment(players: list[dict], slots: dict[str,int]) -> dict[str,str
 
 
 def draft_board(path: Path, search: str = "", position: str | None = None, limit: int = 20) -> dict:
+    from .preparation import recommendation_restrictions
     with connect(path) as db:
         info = settings(db)
         picks = [dict(r) for r in db.execute("SELECT * FROM picks ORDER BY pick")]
@@ -173,9 +174,10 @@ def draft_board(path: Path, search: str = "", position: str | None = None, limit
         if position and position not in player['positions']:
             continue
         row = dict(player)
+        row['recommendation_restrictions'] = recommendation_restrictions(player,info['board'])
         row['fits_roster'] = None if info['slot'] is None else len(roster_assignment(own+[player],slots)) == len(own)+1
         candidates.append(row)
-    candidates.sort(key=lambda p:(p['fits_roster'] is False,p['projected_points'] is None,
+    candidates.sort(key=lambda p:(p['fits_roster'] is False,bool(p['recommendation_restrictions']),p['projected_points'] is None,
                                   -number(p['projected_points'] or 0,'points'),p['id']))
     next_pick = len(picks)+1
     total_picks = info['teams'] * sum(v for k,v in slots.items() if k not in {'IR','IR+'})

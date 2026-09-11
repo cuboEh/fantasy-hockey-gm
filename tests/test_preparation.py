@@ -104,6 +104,45 @@ class PreparationTests(unittest.TestCase):
         market.write_text('id,season,as_of,source,metric,value\nnhl:1,2026-27,2026-09-10,source,rank,40\nnhl:2,2026-27,2026-09-10,source,adp,41\n')
         with self.assertRaisesRegex(ValueError,'one dated'):prepare(self.board,date(2026,9,10),market_path=market)
 
+    def test_new_market_replaces_old_series_and_updates_date(self):
+        self.board['players'][1]['market']={'metric':'rank','value':1,'source':'Old proxy'}
+        market=self.root/'market.csv'
+        market.write_text('id,season,as_of,source,metric,value\nnhl:1,2026-27,2026-09-11,Yahoo,adp,2\n')
+        prepared=prepare(self.board,date(2026,9,11),market_path=market)
+        self.assertEqual(prepared['as_of'],'2026-09-11')
+        self.assertEqual(audit(prepared)['market_coverage'],1)
+        self.assertNotIn('market',next(p for p in prepared['players'] if p['id']=='nhl:2'))
+
+    def test_restricted_players_remain_searchable_and_pickable(self):
+        self.board['recommendation_policy']='yahoo_and_supplied_projection'
+        path=self.root/'board.json';path.write_text(dump_json(self.board))
+        db=self.root/'draft.sqlite';draft.initialize(db,path,14,1)
+        self.assertEqual(guidance(db)['candidates'],[])
+        row=draft.draft_board(db)['candidates'][0]
+        self.assertTrue(row['recommendation_restrictions'])
+        self.assertEqual(draft.pick_player(db,row['id'])['id'],row['id'])
+
+    def test_team_evidence_and_previous_review_preserved(self):
+        self.board['players'][0]['review']={'note':'Existing health concern'}
+        item={**self.evidence,'id':'nhl:1','status':'reviewed','note':'Team corrected','team':'BBB'}
+        with self.assertRaisesRegex(ValueError,'supporting source'):prepare(self.board,date(2026,9,10),{'reviews':[item]})
+        item['team_source']='NHL team release'
+        p=prepare(self.board,date(2026,9,10),{'reviews':[item]})['players'][0]
+        self.assertEqual(p['team'],'BBB')
+        self.assertEqual(p['review_history'][0]['note'],'Existing health concern')
+
+    def test_persisted_decimal_adp_is_compared_numerically(self):
+        first,second=self.board['players'][:2]
+        first['market']={'metric':'adp','value':Decimal('2.1')}
+        second.update(kind=first['kind'],positions=first['positions'])
+        second['market']={'metric':'adp','value':Decimal('10.4')}
+        path=self.root/'board.json';path.write_text(dump_json(self.board))
+        db=self.root/'draft.sqlite';draft.initialize(db,path,14,7)
+        result=guidance(db)
+        candidate=next(p for p in result['candidates'] if p['id']==first['id'])
+        self.assertTrue(candidate['market_before_next_turn'])
+        self.assertEqual(candidate['later_market_alternatives'][first['positions'][0]][0]['id'],second['id'])
+
     def test_csv_fallback_preserves_reviews_and_spreadsheet_safety(self):
         item={**self.evidence,'id':'nhl:1','status':'injury_review','note':'=not a formula'}
         board=prepare(self.board,date(2026,9,10),{'reviews':[item]})

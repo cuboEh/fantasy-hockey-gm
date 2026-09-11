@@ -243,6 +243,8 @@ def build_board(path: Path, config: LeagueConfig, as_of: date,
 def export_csv(board: dict, path: Path) -> None:
     path.parent.mkdir(parents=True, exist_ok=True)
     fields = ["rank", "id", "name", "team", "positions", "projected_games", "points_per_game", "projected_points", "flags", "model", "as_of", "source_generated", "source", "market_metric", "market_value", "market_source", "market_as_of", "review_note", "review_source", "review_as_of"]
+    fields += ['working_projection_source','historical_points','yahoo_rank','preseason_adp','percent_drafted','yahoo_status','recommendation_restrictions','scenario_baseline_points','scenario_downside_points']
+    from .preparation import recommendation_restrictions
     with path.open("w", newline="", encoding="utf-8") as stream:
         writer = csv.DictWriter(stream, fieldnames=fields)
         writer.writeheader()
@@ -257,6 +259,15 @@ def export_csv(board: dict, path: Path) -> None:
                         "source": board["source"]})
             market = player.get("market") or {}
             review = player.get("review") or {}
+            yahoo = player.get('yahoo') or {}
+            scenarios = review.get('reference_scenarios') or {}
+            row.update(working_projection_source=player.get('projection_evidence',{}).get('source','Historical baseline only'),
+                       historical_points=(player.get('baseline_projection') or {}).get('projected_points',''),
+                       yahoo_rank=yahoo.get('rank',''),preseason_adp=yahoo.get('preseason_adp',''),
+                       percent_drafted=yahoo.get('percent_drafted',''),yahoo_status=yahoo.get('status',''),
+                       recommendation_restrictions='; '.join(recommendation_restrictions(player,board)),
+                       scenario_baseline_points=scenarios.get('baseline_points',''),
+                       scenario_downside_points=scenarios.get('downside_points',''))
             row.update({"market_metric":market.get("metric", ""), "market_value":market.get("value", ""),
                         "market_source":market.get("source", ""), "market_as_of":market.get("as_of", ""),
                         "review_note":review.get("note", ""), "review_source":review.get("source", ""),

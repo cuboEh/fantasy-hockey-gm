@@ -11,7 +11,7 @@ from time import perf_counter
 
 from fantasy_hockey.board import read_json, dump_json
 from fantasy_hockey import draft
-from fantasy_hockey.preparation import point_order
+from fantasy_hockey.preparation import point_order, guidance
 from fantasy_hockey.backtest import Forecast
 from fantasy_hockey.seasonlab import opportunity_evaluator
 
@@ -60,7 +60,16 @@ def main():
         db=Path(directory)/'practice.sqlite';draft.initialize(db,a.board,a.teams,None)
         draft.set_slot(db,min(7,a.teams))  # Practice setting only, not Tristan's slot.
         durations=[]
+        guide_durations=[]
         for item in scenarios[0]:
+            if item['team']==min(7,a.teams):
+                start=perf_counter(); advice=guidance(db);guide_durations.append(perf_counter()-start)
+                state=draft.draft_board(db)
+                selected={p['id'] for p in scenarios[0][:item['pick']-1]}
+                for row in advice['candidates']:
+                    assert row['id'] not in selected
+                    assert row['projected_points'] is not None
+                    assert len(draft.roster_assignment(state['roster']+[row],board['roster_slots']))==len(state['roster'])+1
             start=perf_counter();actual=draft.pick_player(db,item['id']);durations.append(perf_counter()-start)
             assert actual==item
         assert draft.draft_board(db)['pick'] is None
@@ -107,9 +116,11 @@ def main():
                         'No injury adjustment; unsupported own rosters skipped']}))
     report={'teams':a.teams,'board_sha256':hashlib.sha256(a.board.read_bytes()).hexdigest(),
             'seeds':[0,1,2],'completed_picks_per_draft':len(scenarios[0]),
-            'max_record_pick_seconds':max(durations),'seat_plans':seat_plans,
+            'max_record_pick_seconds':max(durations),'max_guide_seconds':max(guide_durations),
+            'guide_turns_checked':len(guide_durations),'seat_plans':seat_plans,
             'checks':['full snake order','all rosters fill active positions','persisted picks',
-                      'completed draft rejects picks','undo and reenter','backup reopens identically'],
+                      'completed draft rejects picks','undo and reenter','backup reopens identically',
+                      'guide candidates remain available and legal at every practice turn'],
             'warnings':['Rank-following scenarios, not predictions of friends or model accuracy',
                         'Uses supplied market with synthetic fallback when available; otherwise historical point preferences',
                         'Injury flags do not change simulated choices; review before drafting',

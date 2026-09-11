@@ -40,6 +40,7 @@ or shared behavior those commands call:
 | `preparation`, `preparation_cli` | Board preparation and draft-guide presentation. |
 | `context_scenarios`, `workload_review` | Existing conditional cases and allocation validation. |
 | `goalie_rates`, `goalie_coverage`, `goalie_weeks`, `goalie_weeks_cli` | Rate separation and current goalie-analysis commands. |
+| `providers/dtz` | Read cached values from the permitted projection workbook, reconcile identity and quarantine bad rows. Added for MVP 1, no new standalone script or dependency. |
 | `providers/nhl_schedule` | Distinct PDF and public-JSON schedule adapters with shared validation. |
 | `draft_value`, `draft_planner`, `draft_completion`, `decision_cli` | Existing optional `draft-plan`; experimental, retained to avoid removing a working command. |
 | `backtest`, `seasonlab` | Historical utilities also imported by current coverage/opportunity code. They cannot be archived safely just because of their names. |

@@ -21,7 +21,7 @@ the current MVP 1 priority.
 ```bash
 uv sync
 uv run fantasy --help
-uv run fantasy draft-guide --db var/draft-14-reviewed.sqlite
+uv run fantasy draft-guide --db var/draft-mvp1-2026-09-11.sqlite --limit 8
 uv run fantasy compare-market --help
 ```
 
@@ -54,8 +54,11 @@ snapshots/                      Private dated source data, ignored by Git
 var/                            Private results and draft databases, ignored by Git
 ```
 
-Next: improve the comparison board's important gaps, prepare the actual draft,
-then deliver weekly usable-game and streaming recommendations. More elaborate
+MVP 1 now has a frozen working board and a rehearsed manual session: 373 supported
+Yahoo-eligible projections, 264 ADPs and an explicit restricted watchlist. See the
+[draft-day guide](docs/draft-day.md) for current files, limitations and recovery.
+Next: set your actual slot when known, confirm start time, and refresh material
+news before September 13. Weekly usable-game and streaming advice follows as MVP 2. More elaborate
 search is parked until evidence justifies it. Run checks with:
 
 ```bash
