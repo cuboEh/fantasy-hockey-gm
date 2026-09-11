@@ -70,8 +70,9 @@ cases remain comparisons, not silently blended forecasts.
 
 The exact board passed a persisted 224-pick rehearsal, all 16 practice guide turns,
 undo/re-entry, database-copy recovery and export. All 131 tests pass. No historical
-season campaign was rerun. Actual slot and draft start time remain unknown, so
-operational item 6 remains pending. Refresh health/role evidence before the draft.
+season campaign was rerun. The actual slot remains unknown. Tristan expects September 13
+at approximately 7:30–7:40 p.m. MDT (America/Edmonton); the exact start is not yet
+confirmed. Operational item 6 remains pending for the slot. Refresh health/role evidence before the draft.
 See [draft-day guide](draft-day.md) for artifacts, source limitations and commands.
 
 ## Pre-draft work, implementation completed September 11

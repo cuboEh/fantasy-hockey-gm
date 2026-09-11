@@ -1,8 +1,10 @@
 # MVP 1 draft companion
 
 Updated September 11, 2026. The September 13 draft has a prepared working board
-and an empty 14-team snake-draft session. Tristan's actual slot and start time
-remain unknown. Never set the rehearsal slot in the live session.
+and a 14-team snake-draft session. Tristan expects the draft to start around
+7:30–7:40 p.m. MDT (America/Edmonton, UTC−06:00) on September 13, 2026.
+The time is approximate; the actual slot remains unknown. Never set the rehearsal
+slot in the live session.
 
 ## Browser dashboard
 
@@ -181,7 +183,7 @@ on this machine. These are workflow checks, not season simulations or evidence
 of better draft outcomes. They caught and fixed string-versus-number ADP comparisons
 after SQLite reloads.
 
-Remaining pre-draft actions: set the actual slot, confirm start time/timezone,
+Remaining pre-draft actions: set the actual slot, confirm the exact time within the approximate window,
 refresh material health/role/eligibility news, and inspect the restricted watchlist.
 If inputs materially change, prepare a new dated board and rehearse the changed
 workflow without overwriting existing progress. Waiver timing and Yahoo API

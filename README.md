@@ -80,8 +80,8 @@ var/                            Private results and draft databases, ignored by 
 MVP 1 now has a frozen working board and a rehearsed manual session: 373 supported
 Yahoo-eligible projections, 264 ADPs and an explicit restricted watchlist. See the
 [draft-day guide](docs/draft-day.md) for current files, limitations and recovery.
-Next: set your actual slot when known, confirm start time, and refresh material
-news before September 13. Weekly usable-game and streaming advice follows as MVP 2. More elaborate
+Draft start: September 13, approximately **7:30–7:40 p.m. MDT**. Your slot is
+still unknown. Next: set it when known and refresh material news before the draft. Weekly usable-game and streaming advice follows as MVP 2. More elaborate
 search is parked until evidence justifies it. Run checks with:
 
 ```bash
