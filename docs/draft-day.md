@@ -4,6 +4,43 @@ Updated September 11, 2026. The September 13 draft has a prepared working board
 and an empty 14-team snake-draft session. Tristan's actual slot and start time
 remain unknown. Never set the rehearsal slot in the live session.
 
+## Browser dashboard
+
+Double-click **Fantasy Hockey Dashboard** on your Windows desktop, or open
+[http://127.0.0.1:8765/](http://127.0.0.1:8765/) while the server is running.
+The desktop launcher starts the local server in a minimized window. Keep it running
+through the draft. Closing a browser tab does not delete progress.
+
+Use **My draft slot** to set the actual slot. **Record** opens a confirmation showing
+the player, current pick and receiving team. Record every team's picks in order,
+then inspect the refreshed recommendations and your roster. **Undo last pick**
+reverses only the latest entry. Search includes restricted players so opponents'
+picks can still be recorded. **Why / risks** explains the projection and relevant
+review notes. **Download backup** saves a consistent SQLite copy that can be used
+with the tracker or dashboard later. It includes all picks made before download.
+
+The dashboard shares `var/draft-mvp1-2026-09-11.sqlite` with the CLI. Stale tabs are
+prevented from applying actions to a changed draft state. Pages refresh every 15
+seconds while visible; a Refresh button is also available. It is loopback-only and
+uses no external website access or Yahoo automation.
+
+For another machine or a backup session:
+
+```sh
+uv run fantasy dashboard --db PATH_TO_SESSION.sqlite --open
+```
+
+The Windows launcher installed for this checkout is at
+`/mnt/c/Users/tgiac/OneDrive/Desktop/Fantasy Hockey Dashboard.cmd`. It selects the
+Ubuntu-24.04 WSL distribution and this checkout's virtual environment. If either
+is moved, update that local launcher. No desktop launcher or private data is
+published in Git.
+
+Dashboard validation: 133 tests pass. Browser checks used a separate practice
+session for slot selection, filtering, pick entry and undo. HTTP tests cover
+persistence, stale revisions, rejected foreign mutations and usable SQLite backup.
+The live database was confirmed byte-identical to its original empty snapshot.
+
 ## Working files
 
 - `var/mvp1-2026-09-11-final/board.json`: frozen working board, 513 identities.

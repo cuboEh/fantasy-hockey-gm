@@ -81,9 +81,15 @@ def resolve(db, query: str) -> dict:
     return matches[0]
 
 
-def pick_player(path: Path, query: str) -> dict:
+def check_revision(db, expected_revision: int | None) -> None:
+    if expected_revision is not None and db.execute('SELECT COALESCE(MAX(id),0) FROM events').fetchone()[0] != expected_revision:
+        raise ValueError('The draft changed in another window. Refresh before trying again.')
+
+
+def pick_player(path: Path, query: str, *, expected_revision: int | None = None) -> dict:
     with connect(path) as db:
         db.execute("BEGIN IMMEDIATE")
+        check_revision(db, expected_revision)
         info = settings(db)
         next_pick = db.execute("SELECT COUNT(*) + 1 FROM picks").fetchone()[0]
         rounds = sum(v for k,v in info['board']['roster_slots'].items() if k not in {'IR','IR+'})
@@ -99,9 +105,10 @@ def pick_player(path: Path, query: str) -> dict:
         return result
 
 
-def undo(path: Path) -> dict:
+def undo(path: Path, *, expected_revision: int | None = None) -> dict:
     with connect(path) as db:
         db.execute("BEGIN IMMEDIATE")
+        check_revision(db, expected_revision)
         row = db.execute("SELECT * FROM picks ORDER BY pick DESC LIMIT 1").fetchone()
         if row is None:
             raise ValueError("No pick to undo")
@@ -111,8 +118,10 @@ def undo(path: Path) -> dict:
         return result
 
 
-def set_slot(path: Path, slot: int) -> None:
+def set_slot(path: Path, slot: int, *, expected_revision: int | None = None) -> None:
     with connect(path) as db:
+        db.execute('BEGIN IMMEDIATE')
+        check_revision(db, expected_revision)
         if not 1 <= slot <= settings(db)['teams']:
             raise ValueError("Draft slot is outside this league")
         db.execute("UPDATE metadata SET value=? WHERE key='slot'", (str(slot),))

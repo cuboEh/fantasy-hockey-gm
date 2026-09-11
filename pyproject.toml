@@ -14,3 +14,6 @@ fantasy = "fantasy_hockey.cli:main"
 
 [tool.setuptools.packages.find]
 where = ["src"]
+
+[tool.setuptools.package-data]
+fantasy_hockey = ["dashboard.html"]

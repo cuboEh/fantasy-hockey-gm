@@ -37,8 +37,12 @@ def main() -> int:
     goalie_weeks_cli.register(commands)
     decision_cli.register(commands)
     market.register(commands)
+    from . import dashboard
+    dashboard.register(commands)
     args = parser.parse_args()
     try:
+        if args.command == 'dashboard':
+            return dashboard.handle(args)
         if args.command == 'compare-market':
             return market.handle(args)
         if args.command == 'draft-plan':

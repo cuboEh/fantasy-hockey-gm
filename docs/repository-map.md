@@ -36,6 +36,7 @@ or shared behavior those commands call:
 | --- | --- |
 | `config`, `scoring`, `projections`, `board` | League settings, point arithmetic and forecast inputs. |
 | `market` | Dated market data and the consolidated Yahoo comparison. |
+| `dashboard`, `dashboard.html` | Basic local browser interface over the existing tracker, no new dependency or valuation logic. |
 | `draft`, `draft_cli` | SQLite pick tracking, legal roster assignment and recovery. |
 | `preparation`, `preparation_cli` | Board preparation and draft-guide presentation. |
 | `context_scenarios`, `workload_review` | Existing conditional cases and allocation validation. |

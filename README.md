@@ -16,6 +16,24 @@ Deferred idea recorded in the [product plan](docs/product-plan.md): opponent
 strength, repeated matchups and playoff schedule opportunity. This does not change
 the current MVP 1 priority.
 
+## Open the dashboard
+
+Open [the local dashboard](http://127.0.0.1:8765/) while it is running, or double-click
+**Fantasy Hockey Dashboard** on Tristan's Windows desktop to start it again.
+Set your slot, browse recommendations, search/filter players, record every team's
+picks, undo the last pick and download a SQLite backup. It shares the existing
+live draft session. All changes are local, not Yahoo actions.
+
+The dashboard uses Python's standard library and a single local HTML page, with
+no new dependencies or external services. For another installation, start it with:
+
+```sh
+uv run fantasy dashboard --db var/draft-mvp1-2026-09-11.sqlite --open
+```
+
+Keep its server running while using the page. The desktop launcher starts a
+minimized server window and opens the browser. Reopening it reuses the same session.
+
 ## Use the current workflow
 
 ```bash
