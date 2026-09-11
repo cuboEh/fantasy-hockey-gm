@@ -110,3 +110,47 @@ class MatchupCoverageTests(unittest.TestCase):
         self.assertEqual(fixed['weeks'],active['weeks'])
         self.assertEqual(fixed['record']['wins'],1)
         self.assertEqual(active['record']['conflict_weeks_excluded'],2)
+
+class FrozenOpportunityReplayTests(unittest.TestCase):
+    def test_target_records_rejected_and_stats_rescored(self):
+        from research.validate_draft_planning import historical_opportunity_inputs
+        row={'id':'a','name':'A','position':'C','kind':'skater','team':'X','appeared':True,
+             'points':9999,'stats':{'goals':1},'date':'2024-01-01','game_id':'1'}
+        prior={'records':[row],'team_games':{'X':82},'games':{}}
+        weights={'skater':{'goals':6},'goalie':{}}
+        _,base,_,_=historical_opportunity_inputs({2024:prior},2025,date(2024,9,26),weights)
+        self.assertEqual(base[0].points,6)
+        with self.assertRaisesRegex(ValueError,'Target/future'):
+            historical_opportunity_inputs({2025:prior},2025,date(2024,9,26),weights)
+        with self.assertRaisesRegex(ValueError,'cutoff'):
+            historical_opportunity_inputs({2024:prior},2025,date(2024,1,1),weights)
+
+    def test_zero_observations_and_workload_rate_decomposition(self):
+        from research.validate_draft_planning import error_components
+        for gp,points in [(0,0),(50,600),(82,900)]:
+            r=error_components(70,10,gp,points)
+            self.assertAlmostEqual(r['workload_error_points']+r['rate_error_points'],r['total_error_points'])
+        self.assertEqual(error_components(70,10,0,0)['rate_error_points'],0)
+
+    def test_missing_rows_and_conflicts_exclude_weeks_but_explicit_dnp_does_not(self):
+        from research.validate_draft_planning import audit_replay
+        outcome={'daily_picks':[{'date':'2024-10-07','selected':['a','b']}],
+                 'weeks':{'2024-10-07':{'source_conflicts':0}}}
+        source={'records':[{'date':'2024-10-07','id':'a','appeared':False}]}
+        result=audit_replay(outcome,source)
+        self.assertEqual(result['usable_weeks'],[])
+        self.assertEqual(result['missing_selected_observations'],[{'date':'2024-10-07','id':'b'}])
+        source['records'].append({'date':'2024-10-07','id':'b','appeared':False})
+        self.assertEqual(audit_replay(outcome,source)['usable_weeks'],['2024-10-07'])
+        outcome['weeks']['2024-10-07']['source_conflicts']=1
+        self.assertEqual(audit_replay(outcome,source)['usable_weeks'],[])
+
+    def test_stale_departed_players_excluded_without_target_outcomes(self):
+        from research.validate_draft_planning import historical_opportunity_inputs
+        old={'id':'old','name':'Old','position':'C','kind':'skater','team':'X','appeared':True,
+             'stats':{'goals':1},'date':'2023-01-01','game_id':'1'}
+        recent={**old,'id':'recent','date':'2024-01-01'}
+        season=lambda row:{'records':[row],'team_games':{'X':82},'games':{}}
+        metadata,base,_,_=historical_opportunity_inputs({2023:season(old),2024:season(recent)},2025,date(2024,9,26),{'skater':{'goals':6}})
+        self.assertEqual([p.id for p in base],['recent'])
+        self.assertEqual(set(metadata),{'recent'})

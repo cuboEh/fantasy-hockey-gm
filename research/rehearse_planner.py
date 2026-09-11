@@ -67,10 +67,17 @@ def main():
     for key in ('board','schedule','output-dir'):p.add_argument('--'+key,type=Path,required=True)
     for key in ('workloads','rates','context','case-map'):p.add_argument('--'+key,type=Path)
     p.add_argument('--working-board',action='store_true')
+    p.add_argument('--audit-working',type=Path,help='Audit existing working diagnostic picks without rerunning drafts')
     p.add_argument('--seats',type=int,nargs='+',default=[1,7,14]);p.add_argument('--teams',type=int,default=14)
     p.add_argument('--as-of',type=date.fromisoformat,required=True)
     a=p.parse_args()
     if a.output_dir.exists():p.error('Use a new output directory')
+    if a.audit_working:
+        if not a.workloads or not a.rates:p.error('Completion audit needs workloads and rates')
+        board=json.loads(a.board.read_text());schedule=json.loads(a.schedule.read_text())
+        if date.fromisoformat(board['as_of'])>a.as_of:p.error('Future board')
+        audit_working(board,schedule,json.loads(a.workloads.read_text()),json.loads(a.rates.read_text()),a.audit_working,a.output_dir,a.seats,a.teams)
+        return
     if a.working_board:
         if not 2<=a.teams<=32 or any(not 1<=seat<=a.teams for seat in a.seats):p.error('Invalid teams/seats')
         board=json.loads(a.board.read_text());schedule=json.loads(a.schedule.read_text())
@@ -130,6 +137,79 @@ def main():
                       'backup reopens','undo/reentry','export rebuild restores roster and pick order'],
             'warning':'Synthetic rank-following rehearsal verifies workflow, not future model accuracy; no live draft database opened.'}
     (a.output_dir/'report.json').write_text(json.dumps(report,indent=2))
+
+
+
+def audit_working(board,schedule,workloads,rates,previous,output,seats,teams):
+    """Final-pick coverage tradeoffs and assumption-sensitive review priorities."""
+    from fantasy_hockey.decision_cli import working_starter_cases
+    from fantasy_hockey.draft_value import completion_options
+    if not seats or len(set(seats))!=len(seats) or any(not 1<=s<=teams for s in seats):raise ValueError('Invalid audit seats')
+    players,stresses=working_players(board);mapping={p.id:p for p in players}
+    cases=working_starter_cases(board,workloads,rates)
+    value=RosterValue(players,schedule,board['roster_slots'],draft_opportunity=True)
+    source={p['id']:p for p in board['players']};reports=[];reviews=defaultdict(list)
+    prior_report=json.loads((previous/'report.json').read_text())
+    # Refuse to audit drafts made against a different frozen board or calendar.
+    expected=prior_report['input_sha256'].values()
+    for payload,name in ((board,'board'),(schedule,'schedule')):
+        # Original files are identified by their payloads, not by assumed paths.
+        paths=[Path(p) for p in prior_report['input_sha256']]
+        matched=[p for p in paths if p.exists() and json.loads(p.read_text())==payload]
+        if not any(hashlib.sha256(p.read_bytes()).hexdigest() in expected for p in matched):
+            raise ValueError('Diagnostic input mismatch: '+name)
+    output.mkdir(parents=True)
+    for seat in seats:
+        prior=previous/f'seat-{seat}-two-pick.json';saved=json.loads(prior.read_text());picks=saved['picks']
+        own_picks=[r for r in picks if r['team']==seat]
+        if len(picks)!=teams*16 or len(own_picks)!=16:raise ValueError('Expected a completed 16-round rehearsal')
+        final=own_picks[-1];before=picks[:final['pick']-1];taken={r['player_id'] for r in before}
+        held=[r['player_id'] for r in before if r['team']==seat]
+        options=completion_options(value,held,[p.id for p in players if p.id not in taken],cases)
+        options['seat']=seat;options['original_final_pick']=final['player_id']
+        reference=next((r for r in options['candidates'] if r['id']==final['player_id']),None)
+        for row in options['candidates']:
+            row['delta_vs_original']={case:{key:row['cases'][case][key]-reference['cases'][case][key]
+                for key in ('points','skater_points','qualified_goalie_points','failed_calendar_weeks_proxy')}
+                for case in ('baseline','downside')} if reference else None
+        reports.append(options)
+        (output/f'seat-{seat}-completion.json').write_text(json.dumps(options,indent=2))
+        print('Completed final-pick audit',seat,flush=True)
+        decisions=[]
+        for turn in own_picks:
+            advice=compare_working({'board':board,'teams':teams,'slot':seat,'picks':picks[:turn['pick']-1],'revision':turn['pick']-1},schedule)
+            ids={advice[k] for k in ('baseline_choice','downside_choice','robust_choice','points_choice')}
+            top=next(r for r in advice['candidates'] if r['id']==advice['baseline_choice'])
+            summary={'seat':seat,'pick':turn['pick'],'baseline':advice['baseline_choice'],
+                     'downside':advice['downside_choice'],'robust':advice['robust_choice'],
+                     'max_regret':top['max_regret'],'gain_vs_points':advice['gain_vs_points']}
+            decisions.append(summary)
+            if len({summary['baseline'],summary['downside'],summary['robust']})>1:
+                for row in advice['candidates']:
+                    if row['id'] in ids:
+                        reviews[row['id']].append({**summary,'candidate_max_regret':row['max_regret'],
+                            'conditional_pair_loss':row['two_pick_gain']['baseline']-row['two_pick_gain']['downside']})
+        (output/f'seat-{seat}-sensitivity.json').write_text(json.dumps(decisions,indent=2))
+        print('Completed sensitivity audit',seat,flush=True)
+    priorities=[]
+    for pid,decisions in reviews.items():
+        row=source[pid]
+        priorities.append({'id':pid,'name':row['name'],'kind':row['kind'],'adp':mapping[pid].market_rank,
+            'affected_decisions':len(decisions),'maximum_choice_regret':max(r['max_regret'] for r in decisions),
+            'stress':stresses.get(pid),'existing_review':row.get('review'),
+            'review_question':'Verify start share and competition, and compare the lost bench skater.' if row['kind']=='goalie' else
+                'Check projected GP and role; assess whether the alternative survives to the next turn.',
+            'decisions':decisions})
+    priorities.sort(key=lambda r:(-r['maximum_choice_regret'],-r['affected_decisions'],r['id']))
+    report={'completion':reports,'review_priorities':priorities,
+        'warnings':['Same frozen current forecasts, not realized results. No weights tuned.',
+                    'Final-pick alternatives are available at that historical rehearsal turn; not promised available in the real draft.',
+                    'Review frequency reflects three chosen seats, not player injury or model error probabilities.',
+                    'Existing evidence is exposed for follow-up, not claimed to be newly researched.'],
+        'source_files_sha256':{str(p):hashlib.sha256(p.read_bytes()).hexdigest() for p in [previous/'report.json']+[previous/f'seat-{s}-two-pick.json' for s in seats]},
+        'payload_sha256':{k:hashlib.sha256(json.dumps(v,sort_keys=True).encode()).hexdigest() for k,v in [('board',board),('schedule',schedule),('workloads',workloads),('rates',rates)]},
+        'code_sha256':{str(p):hashlib.sha256(p.read_bytes()).hexdigest() for p in list(Path('src/fantasy_hockey').glob('*.py'))+[Path(__file__)]}}
+    (output/'report.json').write_text(json.dumps(report,indent=2))
 
 
 if __name__=='__main__':main()

@@ -177,3 +177,36 @@ class WorkingComparisonTests(unittest.TestCase):
             compare_turns(players,[],slots,2,1,value,seeds=(0,),opponent_orders={1:players})
         with self.assertRaisesRegex(ValueError,'exactly once'):
             compare_turns(players,[],slots,2,1,value,seeds=(0,),opponent_orders={0:[players[0]]*3})
+
+class CompletionOpportunityTests(unittest.TestCase):
+    def test_final_pick_coverage_prices_the_lost_skater(self):
+        from fantasy_hockey.draft_value import DraftPlayer, Exposure, RosterValue, completion_options
+        calendar={'games':{str(i):{'date':f'2026-10-{5+i:02d}','teams':['X','Y']} for i in range(3)}}
+        def p(pid,kind,rate):return DraftPlayer(pid,pid,'X',kind,('G' if kind=='goalie' else 'C',),Exposure(3,rate),Exposure(3,rate))
+        players=[p('g','goalie',10),p('c','skater',100),p('cheap','skater',1)]
+        value=RosterValue(players,calendar,{'G':1,'C':1},draft_opportunity=True)
+        cases={'g':{case:{'id':'g','team':'X','starts':3,'rate':10} for case in ('baseline','downside')}}
+        result=completion_options(value,['cheap'],['g','c'],cases)
+        self.assertEqual(result['baseline_choice'],'g')  # C is illegal without a bench slot.
+        self.assertEqual(result['candidates'][0]['cases']['baseline']['points'],33)
+        with self.assertRaisesRegex(ValueError,'one roster place'):
+            completion_options(value,[],['g'],cases)
+        self.assertEqual(completion_options(value,['cheap'],['g'],{})['baseline_choice'],None)
+        value=RosterValue(players,calendar,{'G':1,'BN':1},draft_opportunity=True)
+        # An additional skater has no active C slot; the goalie earns exactly 30, not GP plus coverage.
+        result=completion_options(value,['cheap'],['g'],cases)
+        self.assertEqual(result['candidates'][0]['cases']['baseline']['points'],30)
+
+    def test_another_goalie_can_lose_to_usable_skater_production(self):
+        from fantasy_hockey.draft_value import DraftPlayer, Exposure, RosterValue, completion_options
+        calendar={'games':{str(i):{'date':f'2026-10-{5+i:02d}','teams':['X','Y']} for i in range(3)}}
+        def p(pid,kind,rate,team):return DraftPlayer(pid,pid,team,kind,('G' if kind=='goalie' else 'C',),Exposure(3,rate),Exposure(3,rate))
+        players=[p('g','goalie',10,'X'),p('extra','goalie',1,'Y'),p('held','skater',2,'X'),p('better','skater',100,'X')]
+        value=RosterValue(players,calendar,{'G':1,'C':1,'BN':1},draft_opportunity=True)
+        cases={pid:{case:{'id':pid,'team':team,'starts':3,'rate':rate} for case in ('baseline','downside')}
+               for pid,team,rate in [('g','X',10),('extra','Y',1)]}
+        result=completion_options(value,['g','held'],['extra','better'],cases)
+        self.assertEqual(result['baseline_choice'],'better')
+        rows={r['id']:r for r in result['candidates']}
+        self.assertEqual(rows['extra']['cases']['baseline']['points'],36)
+        self.assertEqual(rows['better']['cases']['baseline']['points'],330)

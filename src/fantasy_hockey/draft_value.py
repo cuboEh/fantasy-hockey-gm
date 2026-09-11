@@ -104,3 +104,50 @@ class RosterValue:
         gp,failed=self.goalies(goalies,case)
         sp=self.skaters(skaters,case)
         return {'points':sp+gp,'skater_points':sp,'goalie_points':gp,'failed_weeks_proxy':failed if goalies else None}
+
+
+def completion_options(value, own, candidates, starter_cases, minimum=3):
+    """Compare legal final picks using separate reviewed starter scenarios.
+
+    Each starter_cases[id][case] supplies id, team, starts and a per-start rate.
+    Goalie qualification replaces goalie opportunity value; it is never added
+    as a bonus to appearance points. No partial-roster qualification penalty.
+    """
+    from .draft_planner import fits
+    capacity=sum(n for pos,n in value.slots.items() if pos not in {'IR','IR+'})
+    if len(own)!=capacity-1 or len(set(own))!=len(own):
+        raise ValueError('Completion comparison requires exactly one roster place left')
+    mapping=value.players
+    if len(roster_assignment([mapping[pid].roster_row() for pid in own],value.slots))!=len(own):
+        raise ValueError('Owned roster is illegal')
+    rows=[];excluded=[]
+    for pid in dict.fromkeys(candidates):
+        p=mapping[pid]
+        if pid in own or p.baseline is None or p.downside is None or not fits(p,own,mapping,value.slots):continue
+        ids=own+[pid];goalies=[g for g in ids if mapping[g].kind=='goalie']
+        missing=[g for g in goalies if g not in starter_cases or any(case not in starter_cases[g] for case in ('baseline','downside'))]
+        if missing:
+            excluded.append({'id':pid,'missing_goalie_scenarios':missing});continue
+        cases={}
+        for case in ('baseline','downside'):
+            starter_rows=[starter_cases[g][case] for g in goalies]
+            if any(r['id']!=g or r['team']!=mapping[g].team for g,r in zip(goalies,starter_rows)):
+                raise ValueError('Starter identity/team differs from working board')
+            weeks=weekly_coverage(value.calendar,starter_rows,minimum,value.slots.get('G',0))
+            skaters=tuple(sorted(g for g in ids if mapping[g].kind=='skater'))
+            sp=value.skaters(skaters,case);gp=sum(w['qualified_points'] for w in weeks)
+            cases[case]={'points':sp+gp,'skater_points':sp,'qualified_goalie_points':gp,
+                         'failed_calendar_weeks_proxy':sum(w['failure_probability_proxy'] for w in weeks),
+                         'goalie_count':len(goalies)}
+        rows.append({'id':pid,'name':p.name,'kind':p.kind,'cases':cases})
+    rows.sort(key=lambda r:(-r['cases']['baseline']['points'],r['id']))
+    return {'candidates':rows,'excluded':excluded,
+            'baseline_choice':rows[0]['id'] if rows else None,
+            'downside_choice':min(rows,key=lambda r:(-r['cases']['downside']['points'],r['id']))['id'] if rows else None,
+            'warnings':[
+                'Final-pick conditional comparison, not a recommendation to draft goalies early.',
+                'Skaters use working appearance projections; goalies use separately reviewed starts and per-start rates.',
+                'Calendar-week minimums, uniform start chances and no known-starter news are proxies. Relief appearances are omitted.',
+                'Baseline and downside are conditional cases, not probabilities; missing goalie inputs exclude the comparison.',
+                'No streaming, waiver claims or injury replacements. Do not interpret the third-goalie choice as mandatory.',
+            ]}

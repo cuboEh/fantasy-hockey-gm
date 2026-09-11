@@ -16,6 +16,14 @@ Deferred idea recorded in the [product plan](docs/product-plan.md): opponent
 strength, repeated matchups and playoff schedule opportunity. This does not change
 the current MVP 1 priority.
 
+## Latest model work
+
+The [validation report](docs/validation-2026-09-11.md) records the historical replay,
+fixed opponent-foresight and stale-player issues, forecast-error breakdown,
+and final-roster goalie tradeoffs. All 147 tests pass. Historical outcome coverage
+is still insufficient to claim an advantage. Next: refresh material draft-target
+roles, then repair historical participation/eligibility before tuning weights.
+
 ## Open the dashboard
 
 Open [the local dashboard](http://127.0.0.1:8765/) while it is running, or double-click
@@ -59,8 +67,9 @@ downloads are included in Git.
 - [Repository map](docs/repository-map.md): where the useful code lives, why it is
   retained, and how old script paths changed.
 
-Current limitations: 52 Yahoo-table players lack baseline production estimates,
-two team conflicts need review, and the actual draft slot is still unknown.
+Current limitations: 17 Yahoo entries remain restricted in the working projection
+board, historical validation lacks complete observations, and the actual draft
+slot is still unknown.
 No optimizer has demonstrated a reliable competitive advantage. The two-turn and
 completed-roster planners remain explicitly experimental.
 

@@ -182,9 +182,16 @@ four opponent hypotheses and fixed-pair conditional stress. The basic board rema
 available. See [model notes](pick-comparison.md) for the modest forecast-proxy gains,
 141 passing tests and limitations. No predictive advantage has been established.
 
-Next: retain practical MVP 1 reliability, refresh material pre-draft evidence, and
-specify dated historical outcome validation before promoting this method or tuning
-weights. Broad infrastructure and advanced schedule-strength work remain deferred.
+The next authorized increment is complete as a diagnostic, documented in
+[validation and coverage results](validation-2026-09-11.md). It froze historical
+drafts before outcomes, corrected opponent foresight and stale-player eligibility,
+separated forecast and lineup losses, compared final-pick goalie insurance with
+lost skater value, and audited sensitive choices. Missing observations prevent
+credible historical validation. All 147 tests pass; no forecast weights were tuned.
+
+Next: refresh material pre-draft role evidence, then repair historical participation
+and dated eligibility before tuning or claiming an advantage. The actual slot is
+still needed. Broad infrastructure and advanced schedule-strength work remain deferred.
 
 ## Parked until justified
 

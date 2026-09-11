@@ -149,3 +149,12 @@ Run the same policies and lineup rules against it. Then assess forecast error,
 counted weekly points and goalie-minimum failures, rather than tuning to these nine
 current-forecast mock drafts. Keep the comparison experimental until that evidence
 supports stronger claims. Material September 13 health/role news still needs review.
+
+## September 11 follow-up
+
+The [validation and final-roster report](validation-2026-09-11.md) supersedes the
+validation next step above. The historical diagnostic exposed stale eligibility,
+opponent foresight in an older study, and incomplete participation observations.
+Those findings prevent promotion to a proven model. A separate final-pick coverage
+comparison now prices the skater sacrificed for another goalie; it does not change
+early-round rankings or automatically replace the dashboard comparison.

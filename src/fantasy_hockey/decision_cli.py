@@ -222,11 +222,22 @@ def handle(args):
     if args.working_board:
         snapshot=working_snapshot(args.db)
         if date.fromisoformat(snapshot['board']['as_of'])>args.as_of:raise ValueError('Board is after analysis date')
-        result=compare_working(snapshot,json.loads(args.schedule.read_text()))
+        schedule=json.loads(args.schedule.read_text())
+        if args.method=='completion':
+            if not args.workloads or not args.rates:raise ValueError('Final-pick comparison requires reviewed workloads and starter rates')
+            result=compare_working_completion(snapshot,schedule,json.loads(args.workloads.read_text()),json.loads(args.rates.read_text()))
+        else:result=compare_working(snapshot,schedule)
         if args.output:
             args.output.parent.mkdir(parents=True,exist_ok=True)
             with args.output.open('x') as out:json.dump(result,out,indent=2)
         if args.json:print(json.dumps(result,indent=2));return 0
+        if args.method=='completion':
+            print(f"Pick {result['pick']}: final-roster conditional comparison")
+            for row in result['candidates'][:args.limit]:
+                b=row['cases']['baseline'];d=row['cases']['downside']
+                print(f"{row['name']}: {b['points']:.1f} baseline FP, {d['points']:.1f} downside FP; {b['failed_calendar_weeks_proxy']:.1f} failed calendar weeks (proxy)")
+            for warning in result['warnings']:print('NOTE: '+warning)
+            return 0
         print(f"Pick {result['pick']} to {result['next_turn']}: experimental two-pick opportunity comparison")
         for row in result['candidates'][:args.limit]:
             print(f"{row['name']}: {row['one_pick']['baseline']['gain']:.1f} added now; {row['two_pick_gain']['baseline']:.1f} mean pair gain; {row['max_regret']:.1f} maximum scenario regret")
@@ -268,3 +279,42 @@ def handle(args):
     if result['baseline_choice']!=result['downside_choice']:print('Scenario-sensitive choice: baseline and downside favor different picks.')
     for warning in result['warnings']:print('NOTE: '+warning)
     return 0
+
+
+def working_starter_cases(board, workloads, rates):
+    """Validate dated starter inputs without replacing the frozen board's GP."""
+    as_of=date.fromisoformat(board['as_of']);validate_review(workloads,as_of)
+    if workloads['season']!=board['season']:raise ValueError('Workload season differs from board')
+    start=int(board['season'][:4])
+    if rates['season']!=f'{start-1}{start}' or date.fromisoformat(rates['as_of'])>as_of:
+        raise ValueError('Starter rates must precede the draft season')
+    if board.get('config_sha256') and board['config_sha256'] not in rates.get('input_sha256',{}).values():
+        raise ValueError('Starter-rate scoring differs from board')
+    from .market import TEAM_ALIASES
+    source={p['id']:p for p in board['players']};cases={}
+    for g in workloads['goalies']:
+        p=source.get(g['id']);rate=rates['players'].get(g['id'],{}).get('start',{}).get('shrunk_points')
+        if not p or rate is None or g['baseline_starts'] is None:continue
+        if TEAM_ALIASES.get(p['team'],p['team'])!=g['team']:continue
+        cases[g['id']]={case:{'id':g['id'],'team':g['team'],'starts':g[case+'_starts'],'rate':float(rate)}
+                        for case in ('baseline','downside')}
+    return cases
+
+
+def compare_working_completion(snapshot,schedule,workloads,rates):
+    """Read-only final-pick alternative to the two-pick opportunity comparison."""
+    from .draft_value import completion_options
+    board=snapshot['board'];own=[r['player_id'] for r in snapshot['picks'] if r['team']==snapshot['slot']]
+    capacity=sum(n for pos,n in board['roster_slots'].items() if pos not in {'IR','IR+'})
+    if len(own)!=capacity-1:raise ValueError('Final-pick comparison requires exactly one roster place left')
+    # Reuse the complete working-board, turn, source-date and schedule validation.
+    ordinary=compare_working(snapshot,schedule)
+    players,_=working_players(board);taken={r['player_id'] for r in snapshot['picks']}
+    value=RosterValue(players,schedule,board['roster_slots'],draft_opportunity=True)
+    result=completion_options(value,own,[p.id for p in players if p.id not in taken],working_starter_cases(board,workloads,rates))
+    result.update(model='working_final_pick_coverage_v1',pick=ordinary['pick'],revision=snapshot['revision'],
+                  as_of=board['as_of'],opportunity_choice=ordinary['baseline_choice'],
+                  session_sha256=ordinary['session_sha256'],schedule_sha256=ordinary['schedule_sha256'],
+                  review_sha256={k:hashlib.sha256(json.dumps(v,sort_keys=True).encode()).hexdigest()
+                                 for k,v in [('workloads',workloads),('rates',rates)]})
+    return result
