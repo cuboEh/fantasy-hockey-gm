@@ -2,6 +2,18 @@
 
 A private, non-commercial fantasy hockey analytics tool being planned by an individual developer for personal use in one Yahoo Fantasy Hockey league.
 
+## Strategy review, September 11
+
+Model changes are paused while we review fantasy strategy. The
+[research memo](docs/strategy-research-2026-09-11.md) compares positional scarcity,
+late-goalie and tier-based arguments, active streaming, and league-specific points
+valuation. Yahoo's official help supports the goalie-minimum penalty and confirms
+that relief appearances count, a gap in our starts-only projection.
+
+Proposed next steps: current Yahoo market/eligibility, an independent permitted
+projection baseline, league-specific tiers, and recognizable manager-strategy
+benchmarks tested with equal streaming opportunities. No new strategy is promoted.
+
 ## Completed-roster experiment
 
 The [latest results](docs/completed-roster-planning.md) add full-draft rollouts,
