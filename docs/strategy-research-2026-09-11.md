@@ -238,3 +238,18 @@ Further pasted batches bring the staged snapshot to 390 unique players in
 late ADP. The corresponding name/eligibility audit is
 `comparison-first-390.json`. Season and decimal-column mapping still need
 confirmation before a market import. No live model data changed.
+
+
+### ADP column mapping confirmed by Tristan
+
+Tristan clarified that McDavid's visible values are 100% drafted, preseason ADP
+1.5 and ADP 1.5; other columns are paywalled. The first decimal is therefore
+labeled `preseason_adp` and the second `adp` across the consistently formatted
+batches in `draft-analysis-first-390-labeled.json`. Original decimal strings and
+earlier snapshots remain preserved. All 390 rows were checked: 264 populated
+ADP pairs, 126 missing pairs. No Last 7 Days or premium values were inferred.
+
+The ordinary ADP column is not labeled as Last 7 Days. Rank remains distinct
+from ADP. Season remains unconfirmed, and live rankings/eligibility have not
+changed. The free columns supply a useful candidate market baseline without
+requiring premium data.
