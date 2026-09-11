@@ -22,6 +22,15 @@ these conditional cases are not calibrated forecasts or selected recommendations
 Next: verify deployment/recovery inputs, assess small-sample goalie rates, and
 compare useful lineup/IR replacement value before choosing a working projection.
 
+## Learning from historical situations
+
+A [chronological analogue experiment](docs/historical-analogues.md) now tests
+whether similar prior workload and scoring trajectories improve later-season
+predictions. It evaluates workload-only and workload-plus-rate corrections,
+including a pre-season top-224 subset. Dated injury/role labels are not yet
+available, so the results do not calibrate surgery-specific recovery or trades.
+No variant has replaced the live draft model.
+
 ## Project status
 
 Early local development. The developer submitted a Yahoo Fantasy Sports API access application on September 10, 2026; approval is pending. There is no deployed service or Yahoo connection.
