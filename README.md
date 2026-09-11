@@ -12,6 +12,10 @@ comparison, fitting shortlists and manual tracking. MVP 2 returns to weekly usab
 games, lineup and streaming advice. A measurable edge is the objective, not an
 established result. Deeper search stays parked while these deliverables are finished.
 
+Deferred idea recorded in the [product plan](docs/product-plan.md): opponent
+strength, repeated matchups and playoff schedule opportunity. This does not change
+the current MVP 1 priority.
+
 ## Use the current workflow
 
 ```bash

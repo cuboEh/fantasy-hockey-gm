@@ -128,6 +128,38 @@ useful diagnostic, not a league-win probability. Historical seasons already used
 for development are not untouched holdouts. Realized results from one managed
 team cannot alone establish the counterfactual value of each recommendation.
 
+## Deferred idea: schedule strength and opponent-specific opportunity
+
+Recorded from Tristan on September 11, 2026. Relevant to both MVPs, but explicitly
+not a current implementation priority. All active development remains focused on
+completing MVP 1. Existing schedule/usable-game functionality remains available;
+this idea adds opponent context rather than replacing that work.
+
+Use the published 2026-27 NHL schedule to examine:
+
+- Easier or harder stretches of opponents over a week, month or other horizon.
+- Draft choices and waiver pickups whose upcoming games offer better opportunity.
+- Fantasy playoff schedules, including opponent quality, game volume, off nights
+  and whether those games fit the actual roster and league playoff dates.
+- Repeated matchups within a month and player performance against particular teams.
+- Differences between a short-term scheduling advantage and rest-of-season value.
+
+When revisited, distinguish known schedule facts from uncertain forecasts of
+opponent strength. Investigate whether individual player-versus-team history
+predicts future performance after accounting for sample size, role/team changes,
+and broader player and opponent quality. Treat it as a hypothesis, not an automatic
+bonus based on a few memorable games. Use only information available at the time
+of each decision when evaluating it historically.
+
+Potential future output: explain a pickup's usable games, upcoming opponents,
+estimated opponent adjustment, and the cost of dropping the current player.
+Avoid counting schedule benefits twice if they already enter projected production
+or usable-game value. Refresh schedule data when fixtures change.
+
+Return to this after the core draft companion is complete, during weekly/waiver
+planning or a later playoff-planning increment. No new implementation or research
+is authorized as the immediate priority by this note.
+
 ## Parked until justified
 
 Full-draft and two-turn search refinements, new Monte Carlo/category-win models,
