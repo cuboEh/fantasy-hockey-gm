@@ -1,5 +1,9 @@
 # Historical draft experiments
 
+This page describes the original current-pool diagnostic. The newer
+[multi-season pipeline](six-step-implementation.md) supersedes its data coverage
+and adds daily scoring; the original reports remain preserved.
+
 The first experiment is implemented in `fantasy_hockey.backtest`. It is a
 research diagnostic, not a validated historical season simulator or a production
 model upgrade. The current data permits two chronological draft experiments,

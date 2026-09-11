@@ -28,6 +28,12 @@ outcome checks, and inspected 2015-16 MoneyPuck snapshots. Real historical daily
 replay still needs complete source data; these changes are not a validated model
 upgrade.
 
+The [six-step historical pipeline](docs/six-step-implementation.md) now covers
+2015-16 through 2025-26 with real daily records, four draft policies, separate
+streaming replays, hypothetical H2H comparisons and a dated 2024 market sensitivity
+run. Source conflicts and historical metadata gaps remain explicit. The live
+board has not been replaced by an experimental winner.
+
 ## Intended use
 
 The proposed tool will run locally in Python with a command-line interface and SQLite storage. Its intended user base is one person, the developer.

@@ -4,6 +4,14 @@ Checked September 10, 2026. Downloadable historical data and forward projections
 are different inputs. A provisional historical baseline is now implemented;
 it is not a complete or validated forecast. See the [expanded survey](source-survey.md).
 
+## SportsDataverse historical releases
+
+Follow-up September 10: published skater/goalie box scores, scoring events and
+schedules were downloaded for seasons ending 2013-2026. The adapter and source
+conflicts are documented in [the historical pipeline](six-step-implementation.md).
+These third-party downloads supply historical research inputs without directly
+scraping Yahoo or NHL pages. They do not establish historical Yahoo eligibility.
+
 ## Hockey Insights
 
 The [open-data catalogue](https://hockeyinsights.ca/opendata/) explicitly offers

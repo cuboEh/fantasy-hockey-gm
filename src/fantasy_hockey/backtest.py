@@ -123,7 +123,7 @@ def fits(counts, pos, slots):
     return sum(max(0, n-slots.get(p, 0)) for p, n in updated.items()) <= slots.get('BN', 0)
 
 
-def mock_draft(pool, opponent_pool, slots, teams, seat, seed, strategy):
+def mock_draft(pool, opponent_pool, slots, teams, seat, seed, strategy, market=None, pick_value=None):
     """Outcome data is intentionally absent from this function's arguments."""
     if not 1 <= seat <= teams:
         raise ValueError('Invalid seat')
@@ -133,6 +133,11 @@ def mock_draft(pool, opponent_pool, slots, teams, seat, seed, strategy):
     # Synthetic opponents use a fixed historical-rate model with persistent player
     # preference noise. These rankings are not historical Yahoo ADP.
     preferences = {p.id:p.points * rng.uniform(0.85, 1.15) for p in sorted(opponent_pool, key=lambda p:p.id)}
+    if market:
+        # Supplied market ranks affect opponents only, never player production.
+        tail=max(row['value'] for row in market.values())
+        fallback={p.id:tail+i for i,p in enumerate(sorted(opponent_pool,key=lambda p:(-p.points,p.id)),1)}
+        preferences={p.id:-market.get(p.id,{'value':fallback[p.id]})['value']*rng.uniform(0.9,1.1) for p in sorted(pool,key=lambda p:p.id)}
     own_order = sorted(pool, key=lambda p: (-(p.points - (replacement[p.position] if strategy=='replacement' else 0)), p.id))
     opponent_order = sorted(pool, key=lambda p:(-preferences[p.id], p.id))
     selected = set(); counts = [Counter() for _ in range(teams)]; picks = []
@@ -140,7 +145,14 @@ def mock_draft(pool, opponent_pool, slots, teams, seat, seed, strategy):
     for pick in range(1, teams*rounds+1):
         team = snake_team(pick, teams)
         order = own_order if team == seat else opponent_order
-        player = next((p for p in order if p.id not in selected and fits(counts[team-1], p.position, slots)), None)
+        candidates=(p for p in order if p.id not in selected and fits(counts[team-1], p.position, slots))
+        if team==seat and pick_value is not None:
+            from itertools import islice
+            shortlist=list(islice(candidates,12))
+            own_ids=[p['id'] for p in picks if p['team']==seat]
+            player=max(shortlist,key=lambda p:(pick_value(p,own_ids),p.points,p.id)) if shortlist else None
+        else:
+            player=next(candidates,None)
         if player is None:
             raise ValueError('Historical pool cannot fill this draft')
         selected.add(player.id); counts[team-1][player.position] += 1

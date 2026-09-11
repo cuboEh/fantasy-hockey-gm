@@ -1,5 +1,9 @@
 # Acting on the first-study concerns
 
+Historical note: subsequent implementation now connects real daily records and
+verifies the goalie penalty. See [the six-step pipeline](six-step-implementation.md)
+for current status; the initial limits below describe the earlier slice.
+
 ## Daily usable points
 
 A new offline replay API separates `plan_days` from `settle`. The first receives

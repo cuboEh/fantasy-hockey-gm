@@ -128,13 +128,13 @@ def settle(plans, outcomes, weights, minimum_goalie_appearances):
         week['complete']=not week['missing']
         week['lineup_points']=week['skater_points']+week['goalie_points'] if week['complete'] else None
         week['goalie_minimum_met']=week['goalie_appearances']>=minimum_goalie_appearances if week['complete'] else None
-        # Do not invent Yahoo's penalty semantics while those remain unverified.
-        week['rule_qualified_points']=week['lineup_points'] if week['goalie_minimum_met'] else None
+        # Yahoo Help SLN6878: goalie performance earns no points below minimum.
+        week['rule_qualified_points']=(week['lineup_points'] if week['goalie_minimum_met'] else week['skater_points']) if week['complete'] else None
     return {'days':days,'weeks':weeks,'minimum_goalie_appearances':minimum_goalie_appearances,
             'warnings':['Fixed-roster daily global-lock replay; not Yahoo rolling-lock emulation',
                         'No transaction policy, opponent matchups or H2H win estimate',
                         'Missing outcomes invalidate weekly totals, never silently zero-filled',
-                        'Goalie minimum failures flagged; platform penalty semantics not assumed',
+                        'Goalie minimum failures remove goalie points per Yahoo Help SLN6878',
                         'Input timestamps and source claims require independent verification']}
 
 

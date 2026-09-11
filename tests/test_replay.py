@@ -45,7 +45,7 @@ class ReplayTests(unittest.TestCase):
         result=settle(plans,{'results':[{'date':'2025-10-01','id':'a','appeared':False,'stats':{},'source':'verified'}]}, {},3)
         self.assertEqual(result['weeks']['1']['goalie_appearances'],0)
         self.assertFalse(result['weeks']['1']['goalie_minimum_met'])
-        self.assertIsNone(result['weeks']['1']['rule_qualified_points'])
+        self.assertEqual(result['weeks']['1']['rule_qualified_points'],0)
 
     def test_history_cohort_preserves_workhorse_usage(self):
         history=[(str(i),'G','G','goalie',[(2023,60+i,600),(2024,60+i,600)]) for i in range(5)]

@@ -3,7 +3,9 @@
 The local implementation includes offline scoring, explicit skater role scenarios,
 a historical-rate player board, CSV export and persistent manual draft tracking.
 See [draft-day instructions](draft-day.md) for real-player commands and limitations.
-There is no fitted forecast, lineup optimizer or automated Yahoo integration.
+The historical pipeline now includes daily opportunity selection and streaming
+research. See [six-step implementation](six-step-implementation.md). There is no
+validated fitted forecast or automated Yahoo integration.
 
 ## Run
 
