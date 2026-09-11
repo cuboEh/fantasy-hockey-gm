@@ -31,6 +31,20 @@ including a pre-season top-224 subset. Dated injury/role labels are not yet
 available, so the results do not calibrate surgery-specific recovery or trades.
 No variant has replaced the live draft model.
 
+## Analogue draft replay completed, September 10
+
+The [14-team replay](docs/analogue-draft-replay.md) evaluated 270 drafts across
+nine seasons. Analogue corrections improved basic point drafting by about 85
+counted points, but added only 16 to baseline usable-game drafting, positive in
+5/9 season averages and slightly negative excluding shortened seasons. No model
+promotion is justified. A key failure involved insufficient weekly goalie
+appearances, despite improved average forecast errors.
+
+A four-case historical goalie catalogue now keeps dated preseason labels separate
+from observed outcomes. It is an exploratory pilot, not a causal training set.
+Next work is weekly goalie-coverage utility and a systematically expanded context
+catalogue. The current draft board remains unchanged. All 86 tests pass.
+
 ## Project status
 
 Early local development. The developer submitted a Yahoo Fantasy Sports API access application on September 10, 2026; approval is pending. There is no deployed service or Yahoo connection.
