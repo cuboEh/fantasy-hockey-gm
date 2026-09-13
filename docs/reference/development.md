@@ -1,10 +1,15 @@
 # Draft preparation development
 
+This reference describes an earlier implementation slice. Its "Next slices" and
+feature-availability statements are historical, not the current backlog. Use the
+[active PRD](../PRD-1.0.md) for development scope and the
+[draft-day guide](../guides/draft-day.md) for current operations.
+
 The local implementation includes offline scoring, explicit skater role scenarios,
 a historical-rate player board, CSV export and persistent manual draft tracking.
-See [draft-day instructions](draft-day.md) for real-player commands and limitations.
+See [draft-day instructions](../guides/draft-day.md) for real-player commands and limitations.
 The historical pipeline now includes daily opportunity selection and streaming
-research. See [six-step implementation](six-step-implementation.md). There is no
+research. See [six-step implementation](../archive/six-step-implementation.md). There is no
 validated fitted forecast or automated Yahoo integration.
 
 ## Run

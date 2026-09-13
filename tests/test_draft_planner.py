@@ -140,6 +140,109 @@ class WorkingComparisonTests(unittest.TestCase):
         snapshot['board']['players'][0]['yahoo']['as_of']='2026-09-12'
         with self.assertRaisesRegex(ValueError,'Future'):compare_working(snapshot,schedule)
 
+    def test_pick_explanation_reconciles_now_later_and_paired_cases(self):
+        from fantasy_hockey.decision_cli import compare_working
+        snapshot,schedule=self.fixture()
+        result=compare_working(snapshot,schedule)
+        chosen=result['candidates'][0]
+        self.assertEqual(chosen['id'],'w1')
+        delta=chosen['vs_points_first']
+        self.assertEqual(delta['season_points'],-30)
+        self.assertLess(delta['lineup_now'],0)
+        self.assertGreater(delta['lineup_later'],0)
+        self.assertAlmostEqual(delta['lineup_total'],delta['lineup_now']+delta['lineup_later'])
+        self.assertAlmostEqual(delta['lineup_total'],sum(q['gain_vs_points_first'] for q in chosen['next_options'])/4)
+        reference=next(r for r in result['candidates'] if r['id']==result['points_choice'])
+        for option,baseline in zip(chosen['next_options'],reference['next_options']):
+            self.assertEqual(option['scenario'],baseline['scenario'])
+            self.assertEqual(option['baseline_next_name'],baseline['name'])
+            self.assertAlmostEqual(option['gain_vs_points_first'],option['pair_gain']-baseline['pair_gain'])
+
+    def test_exact_plan_tie_retains_points_first_even_when_id_sorts_later(self):
+        from fantasy_hockey.decision_cli import compare_working
+        snapshot,schedule=self.fixture()
+        snapshot['board']['roster_slots']={'C':1,'LW':1,'BN':1}
+        # Adjacent final two turns: either ordering yields the same pair.
+        snapshot['picks']=[{'pick':1,'team':1,'player_id':'w2'}, {'pick':2,'team':2,'player_id':'w1'}, {'pick':3,'team':2,'player_id':'c2'}]
+        # Team 1 picks at 4 and 5 with no intervening opponent.
+        extra=deepcopy(snapshot['board']['players'][0]);extra.update(id='z_high',name='z_high',points_per_game=120,projected_points=360)
+        snapshot['board']['players'].append(extra)
+        result=compare_working(snapshot,schedule)
+        self.assertEqual(result['points_choice'],'z_high')
+        self.assertEqual(result['baseline_choice'],'z_high')
+        self.assertEqual(result['candidates'][0]['id'],'z_high')
+        self.assertEqual(result['gain_vs_points'],0)
+
+    def test_final_pick_has_no_later_contribution_and_market_stays_missing(self):
+        from fantasy_hockey.decision_cli import compare_working
+        snapshot,schedule=self.fixture()
+        snapshot['picks']=[{'pick':1,'team':1,'player_id':'c1'}, {'pick':2,'team':2,'player_id':'c2'}, {'pick':3,'team':2,'player_id':'w2'}]
+        snapshot['board']['players'][1]['yahoo']={}
+        result=compare_working(snapshot,schedule)
+        self.assertIsNone(result['next_turn'])
+        row=result['candidates'][0]
+        self.assertIsNone(row['adp']);self.assertIsNone(row['yahoo_rank'])
+        self.assertEqual(row['vs_points_first']['lineup_later'],0)
+        self.assertEqual(row['one_pick']['baseline']['gain'],row['two_pick_gain']['baseline'])
+        self.assertTrue(all(q['id'] is None and q['name'] is None for q in row['next_options']))
+
+    def test_comparison_preserves_forecast_provenance_and_separate_history(self):
+        from fantasy_hockey.decision_cli import compare_working
+        snapshot,schedule=self.fixture()
+        source=snapshot['board']['players'][0]
+        source['projection_evidence']={'provider':'Illustrative provider','source':'Permitted test export','as_of':'2026-09-09'}
+        source['baseline_projection']={'projected_points':250}
+        source['review']={'reference_scenarios':{'baseline_points':200,'downside_points':100,'as_of':'2026-09-08'}}
+        original=deepcopy(snapshot)
+        result=compare_working(snapshot,schedule)
+        row=next(r for r in result['candidates'] if r['id']=='c1')
+        self.assertEqual(row['season_points'],330)
+        self.assertEqual(row['projected_games']*row['points_per_game'],330)
+        self.assertEqual(row['projection_evidence'],source['projection_evidence'])
+        self.assertEqual(row['baseline_projection']['projected_points'],250)
+        self.assertEqual(row['review'],source['review'])
+        other=next(r for r in result['candidates'] if r['id']=='w1')
+        self.assertIsNone(other['projection_evidence'])
+        row['projection_evidence']['as_of']='changed'
+        row['baseline_projection']['projected_points']=0
+        self.assertEqual(snapshot,original)
+
+    def test_sensitivity_reports_actual_case_winner_without_changing_forecast(self):
+        from fantasy_hockey.decision_cli import compare_working
+        snapshot,schedule=self.fixture()
+        # Stress the preferred winger, making the other first pick preferable.
+        snapshot['board']['players'][1]['review']={'reference_scenarios':{'baseline_points':100,'downside_points':0,'as_of':'2026-09-10','source':'Illustrative stress'}}
+        result=compare_working(snapshot,schedule)
+        self.assertTrue(result['assumption_sensitive'])
+        self.assertTrue(any(c['case']=='downside' for c in result['sensitivity_cases']))
+        chosen=result['candidates'][0]
+        self.assertEqual(chosen['season_points'],300)
+        refs={r['id']:r for r in result['candidates']}
+        for c in result['sensitivity_cases']:
+            i=list(result['scenario_labels'].values()).index(c['scenario'])
+            winner=refs[c['preferred_id']]['branches'][i]['best_by_case'][c['case']]['value']['points']
+            original=chosen['branches'][i]['best_by_case'][c['case']]['value']['points']
+            self.assertGreater(c['shortfall'],0)
+            self.assertEqual(c['shortfall'],winner-original)
+
+    def test_no_stress_does_not_invent_sensitivity(self):
+        from fantasy_hockey.decision_cli import compare_working
+        snapshot,schedule=self.fixture()
+        result=compare_working(snapshot,schedule)
+        self.assertFalse(result['assumption_sensitive'])
+        self.assertEqual(result['sensitivity_cases'],[])
+        self.assertTrue(all(p['stress'] is None for p in result['candidates']))
+
+    def test_points_baseline_excludes_unsupported_high_scorer(self):
+        from fantasy_hockey.decision_cli import compare_working
+        snapshot,schedule=self.fixture()
+        snapshot['board']['recommendation_policy']='yahoo_and_supplied_projection'
+        for row in snapshot['board']['players'][1:]:
+            row['projection_evidence']={'as_of':'2026-09-09','source':'Illustrative export'}
+        result=compare_working(snapshot,schedule)
+        self.assertEqual(result['points_choice'],'w1')
+        self.assertNotIn('c1',[r['id'] for r in result['candidates']])
+
     def test_missing_owned_forecast_blocks_model_not_tracking(self):
         from fantasy_hockey.decision_cli import compare_working
         snapshot,schedule=self.fixture();snapshot['board']['roster_slots']['BN']=1

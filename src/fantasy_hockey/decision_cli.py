@@ -1,5 +1,6 @@
 """Read-only integration of the draft tracker, reviewed scenarios and two-turn search."""
 from datetime import date
+from copy import deepcopy
 import hashlib
 import json
 from pathlib import Path
@@ -96,12 +97,24 @@ def compare_working(snapshot, schedule):
                          width=4,opponent_orders=orders,fixed_next_pick=True,
                          include_ids=(raw.id,yahoo.id,incremental.id))
     rows=result['candidates']
+    # A tied plan is not evidence to depart from the points-first baseline.
+    rows.sort(key=lambda r:(-r['two_pick_gain']['baseline'],r['id']!=raw.id,r['id']))
+    result['baseline_choice']=rows[0]['id']
     best={(i,case):max(r['branches'][i]['best_by_case'][case]['value']['points'] for r in rows)
           for i in range(len(orders)) for case in ('baseline','downside')}
     for row in rows:
         p=mapping[row['id']];row['positions']=p.positions;row['team']=p.team
         row['season_points']=p.baseline.games*p.baseline.rate
+        row['projected_games']=p.baseline.games
+        row['points_per_game']=p.baseline.rate
+        # Preserve the original evidence and historical comparison separately.
+        # The board date is not a substitute for a missing projection date.
+        row['projection_evidence']=deepcopy(source[p.id].get('projection_evidence'))
+        row['baseline_projection']=deepcopy(source[p.id].get('baseline_projection'))
+        row['review']=deepcopy(source[p.id].get('review'))
+        row['review_history']=deepcopy(source[p.id].get('review_history',[]))
         row['adp']=p.market_rank
+        row['yahoo_rank']=source[p.id].get('yahoo',{}).get('rank')
         row['stress']=stresses.get(p.id)
         row['displaced_points']=max(0,row['season_points']-row['one_pick']['baseline']['gain'])
         row['max_regret']=max(best[i,case]-b['best_by_case'][case]['value']['points'] for i,b in enumerate(row['branches']) for case in ('baseline','downside'))
@@ -114,6 +127,30 @@ def compare_working(snapshot, schedule):
                              for i,b in enumerate(row['branches'])]
     robust=min(rows,key=lambda r:(r['max_regret'],-r['two_pick_gain']['baseline'],r['id']))
     refs={r['id']:r for r in rows}
+    reference=refs[raw.id]
+    chosen=rows[0]
+    sensitivity=[]
+    for i,seed in enumerate(orders):
+        for case in ('baseline','downside'):
+            winner=max(rows,key=lambda r:r['branches'][i]['best_by_case'][case]['value']['points'])
+            shortfall=(winner['branches'][i]['best_by_case'][case]['value']['points']
+                       -chosen['branches'][i]['best_by_case'][case]['value']['points'])
+            if shortfall>0:
+                sensitivity.append({'scenario':labels[seed],'case':case,
+                                    'preferred_id':winner['id'],'preferred_name':winner['name'],
+                                    'shortfall':shortfall})
+    result['assumption_sensitive']=bool(sensitivity)
+    result['sensitivity_cases']=sensitivity
+    for row in rows:
+        season_delta=row['season_points']-reference['season_points']
+        now_delta=row['one_pick']['baseline']['gain']-reference['one_pick']['baseline']['gain']
+        plan_delta=row['two_pick_gain']['baseline']-reference['two_pick_gain']['baseline']
+        row['vs_points_first']={'season_points':season_delta,'lineup_now':now_delta,
+                                'lineup_later':plan_delta-now_delta,'lineup_total':plan_delta}
+        for option,baseline_option in zip(row['next_options'],reference['next_options']):
+            option['baseline_next_name']=baseline_option['name']
+            option['baseline_pair_gain']=baseline_option['pair_gain']
+            option['gain_vs_points_first']=option['pair_gain']-baseline_option['pair_gain']
     result.update(model='working_two_pick_opportunity_v1',revision=snapshot['revision'],
                   roster_aware_choice=incremental.id,points_choice=raw.id,yahoo_choice=yahoo.id,
                   robust_choice=robust['id'],scenario_labels=labels,
@@ -238,9 +275,26 @@ def handle(args):
                 print(f"{row['name']}: {b['points']:.1f} baseline FP, {d['points']:.1f} downside FP; {b['failed_calendar_weeks_proxy']:.1f} failed calendar weeks (proxy)")
             for warning in result['warnings']:print('NOTE: '+warning)
             return 0
-        print(f"Pick {result['pick']} to {result['next_turn']}: experimental two-pick opportunity comparison")
+        final=result['next_turn'] is None
+        print(f"Pick {result['pick']}: final-pick lineup comparison" if final else f"Pick {result['pick']} to {result['next_turn']}: experimental two-pick opportunity comparison")
+        points_first=next(r for r in result['candidates'] if r['id']==result['points_choice'])
+        chosen=result['candidates'][0];delta=chosen['vs_points_first']
+        print(f"Suggested pick: {chosen['name']}"+(' (keep the points-first pick)' if chosen['id']==points_first['id'] else ''))
+        print(f"Points-first baseline: {points_first['name']} ({points_first['season_points']:.1f} projected season FP)")
+        print(f"Season-point difference: {delta['season_points']:+.2f} FP; projected lineup advantage: {delta['lineup_total']:+.2f} FP")
+        print(f"Lineup contribution difference now: {delta['lineup_now']:+.2f} FP"+('' if final else f"; later selection contribution difference: {delta['lineup_later']:+.2f} FP"))
+        print('Assumption-sensitive: another pick leads in a tested case.' if result['assumption_sensitive'] else 'No tested case prefers another pick; this is not a guarantee of reliability.')
+        for case in result['sensitivity_cases']:
+            print(f"  {case['scenario']} / {case['case']}: {case['preferred_name']} leads by {case['shortfall']:.2f} projected FP")
         for row in result['candidates'][:args.limit]:
-            print(f"{row['name']}: {row['one_pick']['baseline']['gain']:.1f} added now; {row['two_pick_gain']['baseline']:.1f} mean pair gain; {row['max_regret']:.1f} maximum scenario regret")
+            print(f"{row['name']}: {row['one_pick']['baseline']['gain']:.1f} added now; {row['two_pick_gain']['baseline']:.1f} {'one-pick value' if final else 'mean pair gain'}; {row['max_regret']:.1f} maximum scenario regret")
+            print(f"  Yahoo rank: {row['yahoo_rank'] if row['yahoo_rank'] is not None else 'unavailable'}; ADP: {row['adp'] if row['adp'] is not None else 'unavailable'}")
+            if not final:
+                for option in row['next_options']:
+                    print(f"  {option['scenario']}: {row['name']} + {option['name']} = {option['pair_gain']:.1f} projected lineup FP; {points_first['name']} + {option['baseline_next_name']} = {option['baseline_pair_gain']:.1f} FP; difference {option['gain_vs_points_first']:+.2f} FP")
+            print(f"  Working projection: {row['season_points']:.1f} season FP; {row['projected_games']:.1f} appearances x {row['points_per_game']:.2f} FP/appearance")
+            evidence=row['projection_evidence'] or {}
+            print(f"  Source: {evidence.get('source') or 'unavailable'}; projection date: {evidence.get('as_of') or 'unavailable'}")
         for warning in result['warnings']:print('NOTE: '+warning)
         return 0
     if not args.workloads or not args.rates:raise ValueError('Supply workload/rate inputs, or use --working-board')

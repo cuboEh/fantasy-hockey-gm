@@ -1,7 +1,15 @@
 # Product goal, MVP and next steps
 
-Revised September 11, 2026. This is the current plan and supersedes older roadmap
-priorities. Existing experiments remain evidence, not obligations to keep building.
+Product context last revised September 11, 2026. As of September 12, the
+[active PRD 1.0](PRD-1.0.md) governs immediate development and acceptance using
+the [PRD workflow](reference/prd-workflow.md). This document retains broader product context,
+historical progress and future scope. Existing experiments remain evidence, not
+obligations to keep building.
+
+PRD 1.0's useful-guide acceptance passed September 12: all 25 requirements were
+verified, with 156 passing tests and an isolated browser/recovery rehearsal.
+Predictive advantage remains unproven. The dated progress sections below preserve
+the earlier sequence; they do not reopen completed PRD work.
 
 ## Goal
 
@@ -73,7 +81,7 @@ undo/re-entry, database-copy recovery and export. All 131 tests pass. No histori
 season campaign was rerun. The actual slot remains unknown. Tristan expects September 13
 at approximately 7:30–7:40 p.m. MDT (America/Edmonton); the exact start is not yet
 confirmed. Operational item 6 remains pending for the slot. Refresh health/role evidence before the draft.
-See [draft-day guide](draft-day.md) for artifacts, source limitations and commands.
+See [draft-day guide](guides/draft-day.md) for artifacts, source limitations and commands.
 
 ## Pre-draft work, implementation completed September 11
 
@@ -179,11 +187,11 @@ Tristan authorized a bounded pick-now-versus-wait comparison after trying the
 browser dashboard. This is now available on demand when the user is on the clock.
 It reuses the working projections, daily slot matching and two-turn planner, with
 four opponent hypotheses and fixed-pair conditional stress. The basic board remains
-available. See [model notes](pick-comparison.md) for the modest forecast-proxy gains,
+available. See [model notes](guides/pick-comparison.md) for the modest forecast-proxy gains,
 141 passing tests and limitations. No predictive advantage has been established.
 
 The next authorized increment is complete as a diagnostic, documented in
-[validation and coverage results](validation-2026-09-11.md). It froze historical
+[validation and coverage results](archive/validation-2026-09-11.md). It froze historical
 drafts before outcomes, corrected opponent foresight and stale-player eligibility,
 separated forecast and lineup losses, compared final-pick goalie insurance with
 lost skater value, and audited sensitive choices. Missing observations prevent
@@ -239,3 +247,9 @@ Compare similar-value rosters with and without concentration, controlling for
 position, usable games, draft price and individual projections. Use dated,
 held-out evidence before promoting a diversification or stacking rule. The current
 priority remains source quality, workload/role review and model validation.
+
+## Cosmetic follow-up from PRD P2 verification
+
+September 12: the local dashboard has no favicon, producing a browser request
+with a 404 response. Comparison and state requests succeed. This is recorded for
+future UI maintenance and does not expand the current recommendation increment.

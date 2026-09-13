@@ -54,7 +54,7 @@ Research runners import the product's reusable functions, not the reverse.
 
 ## Active maintenance tools
 
-See [tools/README.md](../tools/README.md) for the eight commands and their purpose.
+See [tools/README.md](../../tools/README.md) for the eight commands and their purpose.
 Examples of apparent duplication that was deliberately retained:
 
 - Schedule PDF import and JSON retrieval consume different sources. They share
@@ -66,12 +66,12 @@ Examples of apparent duplication that was deliberately retained:
 
 ## Research and archive
 
-[Research index](../research/README.md) groups repeatable studies by purpose.
-[Archived scripts](../archive/tg/personal/experiments/README.md) hold the first-study
+[Research index](../../research/README.md) groups repeatable studies by purpose.
+[Archived scripts](../../archive/tg/personal/experiments/README.md) hold the first-study
 correction, the four-case pilot builder, the historical CSG importer, the original
 workload sensitivity report and the hard-coded starter-rate diagnostic.
 
-The [migration manifest](../archive/tg/personal/experiments/migration.json) records
+The [migration manifest](../../archive/tg/personal/experiments/migration.json) records
 old paths, new paths and pre-move hashes. Existing scientific manifests retain
 original paths and hashes. For exact prior code, use Git history at `cd35e90`;
 current source fingerprints differ after this maintenance refactor. Old handwritten

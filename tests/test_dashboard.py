@@ -87,3 +87,29 @@ class DashboardTests(unittest.TestCase):
         self.post('pick',{'player':'nhl:1','revision':1})
         with self.assertRaises(HTTPError):self.post('compare',{'revision':1})
         with self.assertRaises(HTTPError):self.post('compare',{'revision':2})
+
+    def test_eligibility_and_slot_changes_invalidate_comparison(self):
+        self.post('slot',{'slot':1,'revision':0})
+        first=self.post('compare',{'revision':1})
+        draft.set_positions(self.path,'nhl:1',['C','LW'],'Illustrative eligibility correction')
+        with self.assertRaises(HTTPError):self.post('compare',{'revision':1})
+        updated=self.get_state()
+        result=self.post('compare',{'revision':updated['revision']})
+        self.assertNotEqual(first['session_sha256'],result['session_sha256'])
+        self.post('slot',{'slot':2,'revision':updated['revision']})
+        with self.assertRaises(HTTPError):self.post('compare',{'revision':updated['revision']})
+        self.assertEqual(self.get_state()['board']['slot'],2)
+
+    def test_missing_owned_projection_blocks_comparison_but_allows_tracking(self):
+        # Fixture mutation precedes draft actions; no live data is involved.
+        with draft.connect(self.path) as db:
+            row=json.loads(db.execute('SELECT payload FROM players WHERE id=?',('nhl:1',)).fetchone()[0])
+            row['projected_points']=None
+            db.execute('UPDATE players SET payload=? WHERE id=?',(json.dumps(row),'nhl:1'))
+        self.post('slot',{'slot':1,'revision':0})
+        for revision,pid in enumerate(('nhl:1','nhl:2','nhl:3'),1):
+            self.post('pick',{'player':pid,'revision':revision})
+        with self.assertRaises(HTTPError) as error:self.post('compare',{'revision':4})
+        self.assertIn('owned player',json.load(error.exception)['error'])
+        self.post('pick',{'player':'nhl:4','revision':4})
+        self.assertEqual(len(self.get_state()['picks']),4)

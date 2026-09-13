@@ -22,6 +22,6 @@ original paths and hashes; they were not rewritten to look newly generated.
 
 The bounded September 11 follow-up reuses `validate_draft_planning --working-replay`
 for frozen 2024-25 drafts and `rehearse_planner --audit-working PATH` for final-pick
-coverage and sensitive-choice review. See [results and reproduction commands](../docs/validation-2026-09-11.md).
+coverage and sensitive-choice review. See [results and reproduction commands](../docs/archive/validation-2026-09-11.md).
 The historical market is a retrospective proxy and missing participation prevents
 an advantage claim. Older exact-opponent-order results are not corrected evidence.

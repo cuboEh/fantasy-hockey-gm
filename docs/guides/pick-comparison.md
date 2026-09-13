@@ -152,9 +152,43 @@ supports stronger claims. Material September 13 health/role news still needs rev
 
 ## September 11 follow-up
 
-The [validation and final-roster report](validation-2026-09-11.md) supersedes the
+The [validation and final-roster report](../archive/validation-2026-09-11.md) supersedes the
 validation next step above. The historical diagnostic exposed stale eligibility,
 opponent foresight in an older study, and incomplete participation observations.
 Those findings prevent promotion to a proven model. A separate final-pick coverage
 comparison now prices the skater sacrificed for another goalie; it does not change
 early-round rankings or automatically replace the dashboard comparison.
+
+## September 12: statistical pick explanation (PRD P2)
+
+The summary now names the suggested pick and points-first alternative. It shows
+both projected season totals, their signed difference, and the projected added
+lineup difference over the same horizon. The explanation separates value from the
+current pick and value from the later selection. These are conditional projected
+benefits, not demonstrated season gains or a fitted breakout score.
+
+Every compared candidate is inspectable. Expand its later-options section to see
+both player pairs under each shared opponent case, their projected added lineup
+points and signed difference. Yahoo rank and ADP are separate price context;
+missing values say unavailable. A plan tied with points-first retains points-first.
+On the final turn, the button, summary and cards show one-pick value without a
+later selection. Existing goalie-qualification limitations still apply.
+
+The working-board CLI prints the same tradeoffs and paired alternatives. Use
+`--limit` to control candidate verbosity; JSON retains the complete comparison.
+See [PRD acceptance evidence](../PRD-1.0.md) for checks and remaining phases.
+
+## September 12: uncertainty and release rehearsal (PRD P3/P4)
+
+Expand the assumption-sensitivity summary to see which tested opponent or
+conditional stress case favors a different first pick and by how many projected
+lineup points. A stable choice means only that no tested case preferred another
+player. It does not establish low risk. Missing individual stress cases remain
+unassessed, and scenario counts are not availability probabilities.
+
+Player details expose conditional case dates/sources and the earlier role or
+workload assumptions. Earlier goalie starts are distinguished from the working
+projection's appearances. The underlying forecast is unchanged by these labels.
+
+The guide passed the isolated pick/undo, stale-state, reload, backup and CSV
+rehearsal. The [PRD](../PRD-1.0.md) records the complete acceptance evidence.

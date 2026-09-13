@@ -18,4 +18,4 @@ The normal product entry point is `uv run fantasy`; Yahoo comparison is now
 JSON fetching and PDF import are different provider paths, not duplicate parsers.
 Most commands preserve outputs by requiring new destination paths. Fetch commands
 use network access when their documented caches are missing; they are not tests.
-Research runners moved to `research/`. See the [repository map](../docs/repository-map.md).
+Research runners moved to `research/`. See the [repository map](../docs/reference/repository-map.md).

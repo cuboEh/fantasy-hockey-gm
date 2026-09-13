@@ -52,7 +52,7 @@ def main():
         lines.append(f"| {y-1}-{str(y)[-2:]} | {v['shrink20_workload0.5_points_cohort']:.1f} | {v['shrink0_workload0_replacement_fixed']:.1f} | {v['shrink0_workload0_usable_fixed']:.1f} | {r['streaming_delta']:.1f} |")
     lines+=['',f"{len(models)} fixed-roster draft policies, {len(result['seeds'])} synthetic opponent seeds, league sizes {result['team_counts']}, with seats recorded per scenario. Streaming is evaluated separately from the same baseline draft.",'',
             'All target seasons are reconstructed from prior-season universes. Rookie coverage, pre-draft injuries, original schedule publication dates, actual Yahoo eligibility, opponent streaming and waiver competition remain limitations. Source disagreements are flagged.','',
-            'No policy has been promoted to the live draft board. See docs/six-step-implementation.md for sources, rules and reproduction commands.']
+            'No policy has been promoted to the live draft board. See docs/archive/six-step-implementation.md for sources, rules and reproduction commands.']
     a.output.with_suffix('.md').write_text('\n'.join(lines)+'\n')
     print(json.dumps({k:result[k] for k in ('summary','draft_scenarios','streaming_mean','walk_forward_selection_mean')},indent=2))
 

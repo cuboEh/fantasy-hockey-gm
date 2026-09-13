@@ -6,7 +6,8 @@ the league's scoring and constraints. Python and SQLite are sufficient.
 
 ## Current goal and milestones
 
-The [product plan](docs/product-plan.md) is the current roadmap. MVP 1 is a dependable
+The [active PRD](docs/PRD-1.0.md) defines current delivery and acceptance; the
+[product plan](docs/product-plan.md) retains the broader roadmap. MVP 1 is a dependable
 September 13 draft companion: a reviewed league-specific board, Yahoo market
 comparison, fitting shortlists and manual tracking. MVP 2 returns to weekly usable
 games, lineup and streaming advice. A measurable edge is the objective, not an
@@ -20,11 +21,11 @@ the current MVP 1 priority.
 
 The seven test picks have been cleared with a backup. The live session starts at
 pick 1, with your slot still unset. Seven priority players now have dated notes
-in their dashboard details; see the [evidence refresh](docs/priority-refresh-2026-09-11.md).
+in their dashboard details; see the [evidence refresh](docs/archive/priority-refresh-2026-09-11.md).
 Numerical forecasts are unchanged. NHL team diversification and stacking are
 recorded as deferred ideas in the product plan.
 
-The [validation report](docs/validation-2026-09-11.md) records the historical replay,
+The [validation report](docs/archive/validation-2026-09-11.md) records the historical replay,
 fixed opponent-foresight and stale-player issues, forecast-error breakdown,
 and final-roster goalie tradeoffs. All 147 tests pass. Historical outcome coverage
 is still insufficient to claim an advantage. Next: refresh material draft-target
@@ -40,7 +41,7 @@ live draft session. All changes are local, not Yahoo actions.
 
 The dashboard also has an experimental **Pick now or wait?** comparison when you
 are on the clock. It considers incremental daily lineup value, later options and
-conditional downside. See [model and diagnostic results](docs/pick-comparison.md).
+conditional downside. See [model and diagnostic results](docs/guides/pick-comparison.md).
 
 The dashboard uses Python's standard library and a single local HTML page, with
 no new dependencies or external services. For another installation, start it with:
@@ -65,12 +66,12 @@ uv run fantasy compare-market --help
 Local data paths require this checkout's private inputs. No credentials or private
 downloads are included in Git.
 
-- [Yahoo comparison board](docs/yahoo-market-comparison.md): 390 players, ADP,
+- [Yahoo comparison board](docs/guides/yahoo-market-comparison.md): 390 players, ADP,
   eligibility, historical values and reviewed scenarios. Includes the full command.
-- [Draft-day guide](docs/draft-day.md): manual pick tracking and recovery.
-- [Strategy review](docs/strategy-research-2026-09-11.md): what we should test before
+- [Draft-day guide](docs/guides/draft-day.md): manual pick tracking and recovery.
+- [Strategy review](docs/archive/strategy-research-2026-09-11.md): what we should test before
   changing recommendations.
-- [Repository map](docs/repository-map.md): where the useful code lives, why it is
+- [Repository map](docs/reference/repository-map.md): where the useful code lives, why it is
   retained, and how old script paths changed.
 
 Current limitations: 17 Yahoo entries remain restricted in the working projection
@@ -81,12 +82,17 @@ completed-roster planners remain explicitly experimental.
 
 ## Project layout
 
+See the [documentation index](docs/README.md) for guides, references and archived reports.
+
 ```text
 src/fantasy_hockey/              Installed CLI and reusable scoring/roster modules
 tools/                          Eight data-preparation and maintenance commands
 research/                       Repeatable studies and research-only helpers
 tests/                          Tests for active and retained research behavior
-docs/                           Current guides and research findings
+docs/                           Documentation index, active PRD and product plan
+docs/guides/                    Draft-day usage and comparison instructions
+docs/reference/                 Development, methods and source references
+docs/archive/                   Dated studies and previous progress reports
 archive/tg/personal/             Completed one-off scripts and old progress notes
 snapshots/                      Private dated source data, ignored by Git
 var/                            Private results and draft databases, ignored by Git
@@ -94,7 +100,7 @@ var/                            Private results and draft databases, ignored by 
 
 MVP 1 now has a frozen working board and a rehearsed manual session: 373 supported
 Yahoo-eligible projections, 264 ADPs and an explicit restricted watchlist. See the
-[draft-day guide](docs/draft-day.md) for current files, limitations and recovery.
+[draft-day guide](docs/guides/draft-day.md) for current files, limitations and recovery.
 Draft start: September 13, approximately **7:30–7:40 p.m. MDT**. Your slot is
 still unknown. Next: set it when known and refresh material news before the draft. Weekly usable-game and streaming advice follows as MVP 2. More elaborate
 search is parked until evidence justifies it. Run checks with:

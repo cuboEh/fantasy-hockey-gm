@@ -5,7 +5,7 @@ now has 61 source-backed conditional scenarios and one reviewed but unresolved
 entry, Connor Ingram. Reviewed means the role was investigated, not that starts,
 health, job security or performance are guaranteed.
 
-The private [complete table](../var/goalie-review-complete-2026-09-10/review.md)
+The private [complete table](../../var/goalie-review-complete-2026-09-10/review.md)
 contains all 62 players, source links, roles and baseline/downside start counts.
 Its companion `goalies.csv` is suitable for draft-day reference. Downloaded data
 and personal artifacts remain excluded from Git.
