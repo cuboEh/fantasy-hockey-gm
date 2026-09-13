@@ -1,7 +1,7 @@
 Complete the bounded overnight development queue for fantasy-hockey-gm.
 
 Read AGENTS.md, docs/reference/prd-workflow.md, docs/reference/overnight-server.md,
-docs/planned/PRD-1.1.md (or its activated root location), and
+docs/PRD-1.1.md (or its activated root location), and
 var/overnight/run-plan.md. User requirements in these documents are the handoff
 from the originating conversation. Do not assume access to that conversation.
 

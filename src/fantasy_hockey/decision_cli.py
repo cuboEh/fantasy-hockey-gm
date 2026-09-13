@@ -50,7 +50,7 @@ def working_players(board):
     return players,stresses
 
 
-def compare_working(snapshot, schedule):
+def compare_working(snapshot, schedule, selected_id=None):
     """Two-pick opportunity comparison using the frozen working forecast.
 
     No historical outcomes, projection fitting or roster mutations. Documented
@@ -77,6 +77,18 @@ def compare_working(snapshot, schedule):
     if any(value.team_games[p.team]!=int(board['assumptions']['season_games']) for p in players if p.baseline):raise ValueError('Schedule does not contain a full season for every projected team')
     legal=[p for p in players if p.id not in selected and p.baseline and fits(p,own,mapping,board['roster_slots'])]
     if not legal:raise ValueError('No supported fitting candidates')
+    selection=None
+    if selected_id is not None:
+        from .preparation import recommendation_restrictions
+        if not isinstance(selected_id,str) or not selected_id:raise ValueError('Select a player identity')
+        reason=None
+        if selected_id not in mapping:reason='Player identity is not in this board.'
+        elif selected_id in selected:reason='Player has already been drafted and is unavailable.'
+        elif mapping[selected_id].baseline is None:
+            reason='Unsupported: '+('; '.join(recommendation_restrictions(source[selected_id],board)) or 'working forecast unavailable')
+        elif not fits(mapping[selected_id],own,mapping,board['roster_slots']):reason='Player does not fit your remaining roster places.'
+        selection={'id':selected_id,'name':mapping[selected_id].name if selected_id in mapping else selected_id,
+                   'included':reason is None,'reason':reason}
     raw=max(legal,key=lambda p:(p.baseline.games*p.baseline.rate,p.id))
     yahoo=min(legal,key=lambda p:(float(source[p.id].get('yahoo',{}).get('rank') or 1e9),p.id))
     # Shared preference orders across every candidate branch. These are distinct
@@ -95,7 +107,7 @@ def compare_working(snapshot, schedule):
     incremental=max(legal,key=lambda p:(value.evaluate(own+[p.id])['points']-initial,p.id))
     result=compare_turns(players,picks,board['roster_slots'],teams,seat,value,seeds=tuple(orders),
                          width=4,opponent_orders=orders,fixed_next_pick=True,
-                         include_ids=(raw.id,yahoo.id,incremental.id))
+                         include_ids=(raw.id,yahoo.id,incremental.id)+((selected_id,) if selection and selection['included'] else ()))
     rows=result['candidates']
     # A tied plan is not evidence to depart from the points-first baseline.
     rows.sort(key=lambda r:(-r['two_pick_gain']['baseline'],r['id']!=raw.id,r['id']))
@@ -151,7 +163,14 @@ def compare_working(snapshot, schedule):
             option['baseline_next_name']=baseline_option['name']
             option['baseline_pair_gain']=baseline_option['pair_gain']
             option['gain_vs_points_first']=option['pair_gain']-baseline_option['pair_gain']
-    result.update(model='working_two_pick_opportunity_v1',revision=snapshot['revision'],
+            option['baseline_stress_gain']=baseline_option['stress_gain']
+            option['stress_vs_points_first']=option['stress_gain']-baseline_option['stress_gain']
+            option['unassessed_players']=[{'id':pid,'name':mapping[pid].name}
+                for pid in (row['id'],option['id']) if pid and pid not in stresses]
+            option['baseline_unassessed_players']=[{'id':pid,'name':mapping[pid].name}
+                for pid in (reference['id'],baseline_option['id']) if pid and pid not in stresses]
+            option['lead_under_stress']=stress_lead_result(option['gain_vs_points_first'],option['stress_vs_points_first'])
+    result.update(model='working_two_pick_opportunity_v1',revision=snapshot['revision'],selection=selection,
                   roster_aware_choice=incremental.id,points_choice=raw.id,yahoo_choice=yahoo.id,
                   robust_choice=robust['id'],scenario_labels=labels,
                   gain_vs_points=rows[0]['two_pick_gain']['baseline']-refs[raw.id]['two_pick_gain']['baseline'],
@@ -168,6 +187,15 @@ def compare_working(snapshot, schedule):
         'Bounded raw-value and positional shortlist, plus best current incremental option and baseline choices. Some two-player combinations are not searched.',
         'Later bench construction, streaming, playoff weighting and changing roles are outside this comparison.']
     return result
+
+
+def stress_lead_result(working_difference, stress_difference):
+    """Exact signed comparisons, with no fitted meaningful-gap threshold."""
+    if working_difference>0:
+        if stress_difference<0:return 'reversed'
+        if stress_difference==0:return 'tied'
+        return 'retained'
+    return 'no_working_lead'
 
 
 def build_players(board,workloads,rates,as_of,context=None,case_map=None):

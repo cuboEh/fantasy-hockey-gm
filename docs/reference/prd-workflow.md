@@ -6,7 +6,7 @@ can be requested in ordinary language, without a separate agent runner.
 
 ## Structure and lifecycle
 
-Keep one active versioned PRD, currently [PRD 1.0](../PRD-1.0.md). The
+Keep one active versioned PRD, currently [PRD 1.1](../PRD-1.1.md). The
 [product plan](../product-plan.md) holds background and future scope. Existing research
 reports remain evidence, not implementation backlogs. PRD versions are independent
 of Python package versions. Archive a superseded PRD when its replacement becomes

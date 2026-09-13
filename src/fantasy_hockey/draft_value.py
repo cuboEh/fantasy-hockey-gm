@@ -141,7 +141,14 @@ def completion_options(value, own, candidates, starter_cases, minimum=3):
                          'goalie_count':len(goalies)}
         rows.append({'id':pid,'name':p.name,'kind':p.kind,'cases':cases})
     rows.sort(key=lambda r:(-r['cases']['baseline']['points'],r['id']))
+    skaters=[r for r in rows if r['kind']=='skater']
+    references={case:max(skaters,key=lambda r:(r['cases'][case]['points'],r['id'])) if skaters else None
+                for case in ('baseline','downside')}
+    for row in rows:
+        for case,reference in references.items():
+            row['cases'][case]['points_vs_best_skater']=(row['cases'][case]['points']-reference['cases'][case]['points']) if reference else None
     return {'candidates':rows,'excluded':excluded,
+            'skater_references':{case:{'id':r['id'],'name':r['name'],'points':r['cases'][case]['points']} if r else None for case,r in references.items()},
             'baseline_choice':rows[0]['id'] if rows else None,
             'downside_choice':min(rows,key=lambda r:(-r['cases']['downside']['points'],r['id']))['id'] if rows else None,
             'warnings':[

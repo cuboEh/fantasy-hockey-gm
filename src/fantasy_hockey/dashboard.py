@@ -29,7 +29,8 @@ def state(path: Path) -> dict:
     raise ValueError('The draft is changing. Refresh to load a consistent view.')
 
 
-def make_server(path: Path, port: int = 8765, schedule_path: Path | None = None) -> HTTPServer:
+def make_server(path: Path, port: int = 8765, schedule_path: Path | None = None,
+                workloads_path: Path | None = None, rates_path: Path | None = None) -> HTTPServer:
     path = path.resolve()
     state(path)  # Fail before opening the listener if the session is unusable.
     token = secrets.token_urlsafe(32)
@@ -80,16 +81,29 @@ def make_server(path: Path, port: int = 8765, schedule_path: Path | None = None)
                 data = json.loads(self.rfile.read(length))
                 if not isinstance(data,dict) or type(data.get('revision')) is not int:raise ValueError('Refresh the dashboard first')
                 revision = data['revision']
-                if self.path == '/api/compare':
-                    from .decision_cli import working_snapshot, compare_working
+                if self.path in {'/api/compare','/api/coverage'}:
+                    from .decision_cli import working_snapshot, compare_working, compare_working_completion
                     import hashlib
                     if not schedule_path:raise ValueError('No schedule configured. Basic draft tracking remains available.')
                     snapshot=working_snapshot(path)
                     if snapshot['revision']!=revision:raise ValueError('The draft changed. Refresh before comparing picks.')
-                    raw=schedule_path.read_bytes();key=(revision,hashlib.sha256(raw).hexdigest())
+                    raw=schedule_path.read_bytes()
+                    coverage=self.path=='/api/coverage'
+                    selected_id=data.get('selected_id') if not coverage else None
+                    if selected_id is not None and (not isinstance(selected_id,str) or not selected_id):raise ValueError('Select a player identity')
+                    if coverage and (not workloads_path or not rates_path):
+                        raise ValueError('Goalie coverage needs separately reviewed starts and starter rates. Ordinary comparison and tracking remain available.')
+                    extra=[p.read_bytes() for p in (workloads_path,rates_path)] if coverage else []
+                    key=(self.path,revision,selected_id,*(hashlib.sha256(r).hexdigest() for r in [raw,*extra]))
                     if key not in comparison_cache:
-                        result=compare_working(snapshot,json.loads(raw))
+                        try:
+                            inputs=[json.loads(r) for r in [raw,*extra]]
+                            if any(not isinstance(value,dict) for value in inputs):raise ValueError('Comparison inputs must be JSON objects. Ordinary tracking remains available.')
+                            result=compare_working_completion(snapshot,*inputs) if coverage else compare_working(snapshot,inputs[0],selected_id)
+                        except (KeyError,TypeError,IndexError,AttributeError) as exc:
+                            raise ValueError('Comparison inputs are incomplete or incompatible. Ordinary tracking remains available.') from exc
                         comparison_cache.clear();comparison_cache[key]=result
+                    if working_snapshot(path)['revision']!=revision:raise ValueError('The draft changed while calculating. Refresh before comparing picks.')
                     self.respond(comparison_cache[key]);return
                 elif self.path == '/api/pick':
                     if not isinstance(data.get('player'),str) or not data['player']:raise ValueError('Select a player')
@@ -113,12 +127,14 @@ def register(commands):
     parser.add_argument('--port',type=int,default=8765)
     parser.add_argument('--open',action='store_true',dest='open_browser')
     parser.add_argument('--schedule',type=Path,help='Normalized upcoming schedule for pick-now versus wait comparisons')
+    parser.add_argument('--workloads',type=Path,help='Reviewed goalie starts for optional final-pick coverage')
+    parser.add_argument('--rates',type=Path,help='Previous-season starter rates for optional final-pick coverage')
 
 
 def handle(args):
     if not 1 <= args.port <= 65535:raise ValueError('Port must be between 1 and 65535')
     url = f'http://127.0.0.1:{args.port}'
-    try:server = make_server(args.db,args.port,args.schedule)
+    try:server = make_server(args.db,args.port,args.schedule,args.workloads,args.rates)
     except OSError:
         # Reopening the desktop launcher should reuse this exact session only.
         try:

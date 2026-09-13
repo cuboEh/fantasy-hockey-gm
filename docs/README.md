@@ -1,13 +1,10 @@
 # Documentation
 
-Next scoped increment: [draft PRD 1.1](planned/PRD-1.1.md), covering close-call
-comparisons, goalie coverage, selected-player comparisons, target research and an
-overnight handoff. See the [private server runbook](reference/overnight-server.md)
-and [unattended prompt](reference/overnight-prompt.md). It is not
-activated; PRD 1.0 remains the completed delivery record.
-
-Start with [PRD 1.0](PRD-1.0.md) for current development requirements and
-[the draft-day guide](guides/draft-day.md) for using the tool.
+Active increment: [PRD 1.1](PRD-1.1.md). The prior verified release is
+[PRD 1.0](archive/PRD-1.0.md). See the [server runbook](reference/overnight-server.md)
+and [draft-day guide](guides/draft-day.md).
+The September 13 release passed local verification and is checkpointed as
+`prd-1.1-verified`. Private verification and handoff are under `var/overnight/`.
 The [product plan](product-plan.md) holds broader goals and future ideas.
 Use [the PRD workflow](reference/prd-workflow.md) to refine, implement and verify work.
 

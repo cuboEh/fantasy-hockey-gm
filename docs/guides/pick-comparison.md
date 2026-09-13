@@ -176,7 +176,7 @@ later selection. Existing goalie-qualification limitations still apply.
 
 The working-board CLI prints the same tradeoffs and paired alternatives. Use
 `--limit` to control candidate verbosity; JSON retains the complete comparison.
-See [PRD acceptance evidence](../PRD-1.0.md) for checks and remaining phases.
+See [PRD acceptance evidence](../archive/PRD-1.0.md) for checks and remaining phases.
 
 ## September 12: uncertainty and release rehearsal (PRD P3/P4)
 
@@ -191,4 +191,4 @@ workload assumptions. Earlier goalie starts are distinguished from the working
 projection's appearances. The underlying forecast is unchanged by these labels.
 
 The guide passed the isolated pick/undo, stale-state, reload, backup and CSV
-rehearsal. The [PRD](../PRD-1.0.md) records the complete acceptance evidence.
+rehearsal. The [PRD](../archive/PRD-1.0.md) records the complete acceptance evidence.

@@ -11,7 +11,7 @@ Do not use em dashes in writing.
 
 ## PRD workflow
 
-The active delivery contract is [PRD 1.0](docs/PRD-1.0.md).
+The active delivery contract is [PRD 1.1](docs/PRD-1.1.md).
 Read it and [the development workflow](docs/reference/prd-workflow.md) before feature work.
 `docs/product-plan.md` retains product context and future ideas; the active PRD
 governs the current increment. User instructions take precedence.

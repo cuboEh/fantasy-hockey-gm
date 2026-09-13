@@ -6,7 +6,7 @@ the league's scoring and constraints. Python and SQLite are sufficient.
 
 ## Current goal and milestones
 
-The [active PRD](docs/PRD-1.0.md) defines current delivery and acceptance; the
+The [active PRD](docs/PRD-1.1.md) defines current delivery and acceptance; the
 [product plan](docs/product-plan.md) retains the broader roadmap. MVP 1 is a dependable
 September 13 draft companion: a reviewed league-specific board, Yahoo market
 comparison, fitting shortlists and manual tracking. MVP 2 returns to weekly usable

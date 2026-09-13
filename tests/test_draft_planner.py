@@ -158,6 +158,27 @@ class WorkingComparisonTests(unittest.TestCase):
             self.assertEqual(option['baseline_next_name'],baseline['name'])
             self.assertAlmostEqual(option['gain_vs_points_first'],option['pair_gain']-baseline['pair_gain'])
 
+    def test_fixed_pair_stress_differences_and_asymmetric_missing_assessments(self):
+        from fantasy_hockey.decision_cli import compare_working
+        snapshot,schedule=self.fixture()
+        snapshot['board']['players'][1]['review']={'reference_scenarios':{'baseline_points':100,'downside_points':0,'as_of':'2026-09-10'}}
+        result=compare_working(snapshot,schedule)
+        rows={r['id']:r for r in result['candidates']}
+        chosen=rows[result['baseline_choice']];reference=rows[result['points_choice']]
+        for i,q in enumerate(chosen['next_options']):
+            self.assertEqual(q['lead_under_stress'],'reversed')
+            self.assertEqual(q['stress_vs_points_first'],q['stress_gain']-q['baseline_stress_gain'])
+            self.assertAlmostEqual(q['stress_vs_points_first'],chosen['branches'][i]['best_by_case']['downside']['value']['points']-reference['branches'][i]['best_by_case']['downside']['value']['points'])
+            self.assertEqual([p['id'] for p in q['unassessed_players']],[q['id']])
+            self.assertIn(reference['id'],[p['id'] for p in q['baseline_unassessed_players']])
+
+    def test_stress_lead_exact_tie_and_no_threshold(self):
+        from fantasy_hockey.decision_cli import stress_lead_result
+        self.assertEqual(stress_lead_result(1,0),'tied')
+        self.assertEqual(stress_lead_result(1,-1e-12),'reversed')
+        self.assertEqual(stress_lead_result(1,1e-12),'retained')
+        self.assertEqual(stress_lead_result(0,0),'no_working_lead')
+
     def test_exact_plan_tie_retains_points_first_even_when_id_sorts_later(self):
         from fantasy_hockey.decision_cli import compare_working
         snapshot,schedule=self.fixture()
@@ -233,6 +254,33 @@ class WorkingComparisonTests(unittest.TestCase):
         self.assertEqual(result['sensitivity_cases'],[])
         self.assertTrue(all(p['stress'] is None for p in result['candidates']))
 
+    def test_selected_candidate_outside_shortlist_uses_same_opponents_and_fixed_pairs(self):
+        from fantasy_hockey.decision_cli import compare_working
+        snapshot,schedule=self.fixture()
+        for i in range(8):
+            row=deepcopy(snapshot['board']['players'][0]);row.update(id=f'extra{i}',name=f'extra{i}',points_per_game=1+i,projected_points=3*(1+i));snapshot['board']['players'].append(row)
+        original=deepcopy(snapshot);ordinary=compare_working(snapshot,schedule)
+        self.assertNotIn('extra0',[r['id'] for r in ordinary['candidates']])
+        result=compare_working(snapshot,schedule,'extra0')
+        self.assertEqual(result['selection'],{'id':'extra0','name':'extra0','included':True,'reason':None})
+        selected=next(r for r in result['candidates'] if r['id']=='extra0')
+        self.assertEqual([b['seed'] for b in selected['branches']],ordinary['seeds'])
+        for branch in selected['branches']:
+            self.assertEqual(branch['best_by_case']['baseline']['next_id'],branch['best_by_case']['downside']['next_id'])
+        new={r['id']:r for r in result['candidates']}
+        for old in ordinary['candidates']:self.assertEqual(old['branches'],new[old['id']]['branches'])
+        self.assertEqual(snapshot,original)
+
+    def test_selected_unavailable_unsupported_and_nonfitting_reasons(self):
+        from fantasy_hockey.decision_cli import compare_working
+        snapshot,schedule=self.fixture()
+        snapshot['picks']=[{'pick':1,'team':1,'player_id':'c1'},{'pick':2,'team':2,'player_id':'c2'},{'pick':3,'team':2,'player_id':'w2'}]
+        extra=deepcopy(snapshot['board']['players'][0]);extra.update(id='extra',name='extra');snapshot['board']['players'].append(extra)
+        for pid,reason in [('c1','already been drafted'),('extra','does not fit'),('unknown','not in this board')]:
+            result=compare_working(snapshot,schedule,pid);self.assertFalse(result['selection']['included']);self.assertIn(reason,result['selection']['reason']);self.assertTrue(result['candidates'])
+        extra['projected_points']=None
+        result=compare_working(snapshot,schedule,'extra');self.assertIn('Unsupported',result['selection']['reason'])
+
     def test_points_baseline_excludes_unsupported_high_scorer(self):
         from fantasy_hockey.decision_cli import compare_working
         snapshot,schedule=self.fixture()
@@ -290,6 +338,9 @@ class CompletionOpportunityTests(unittest.TestCase):
         value=RosterValue(players,calendar,{'G':1,'C':1},draft_opportunity=True)
         cases={'g':{case:{'id':'g','team':'X','starts':3,'rate':10} for case in ('baseline','downside')}}
         result=completion_options(value,['cheap'],['g','c'],cases)
+        missing=completion_options(value,['cheap'],['g'],cases)
+        self.assertTrue(all(v is None for v in missing['skater_references'].values()))
+        self.assertIsNone(missing['candidates'][0]['cases']['baseline']['points_vs_best_skater'])
         self.assertEqual(result['baseline_choice'],'g')  # C is illegal without a bench slot.
         self.assertEqual(result['candidates'][0]['cases']['baseline']['points'],33)
         with self.assertRaisesRegex(ValueError,'one roster place'):
@@ -309,6 +360,12 @@ class CompletionOpportunityTests(unittest.TestCase):
         cases={pid:{case:{'id':pid,'team':team,'starts':3,'rate':rate} for case in ('baseline','downside')}
                for pid,team,rate in [('g','X',10),('extra','Y',1)]}
         result=completion_options(value,['g','held'],['extra','better'],cases)
+        refs=result['skater_references']
+        self.assertTrue(all(r['id']=='better' for r in refs.values()))
+        for row in result['candidates']:
+            for case,values in row['cases'].items():
+                self.assertAlmostEqual(values['points'],values['skater_points']+values['qualified_goalie_points'])
+                self.assertAlmostEqual(values['points_vs_best_skater'],values['points']-refs[case]['points'])
         self.assertEqual(result['baseline_choice'],'better')
         rows={r['id']:r for r in result['candidates']}
         self.assertEqual(rows['extra']['cases']['baseline']['points'],36)

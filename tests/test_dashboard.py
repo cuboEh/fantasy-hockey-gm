@@ -113,3 +113,26 @@ class DashboardTests(unittest.TestCase):
         self.assertIn('owned player',json.load(error.exception)['error'])
         self.post('pick',{'player':'nhl:4','revision':4})
         self.assertEqual(len(self.get_state()['picks']),4)
+
+    def test_missing_coverage_inputs_leave_ordinary_comparison_and_tracking_usable(self):
+        self.post('slot',{'slot':1,'revision':0})
+        with self.assertRaises(HTTPError) as error:self.post('coverage',{'revision':1})
+        self.assertIn('reviewed starts',json.load(error.exception)['error'])
+        self.assertTrue(self.post('compare',{'revision':1})['candidates'])
+        self.post('pick',{'player':'nhl:1','revision':1})
+        self.assertEqual(len(self.get_state()['picks']),1)
+
+    def test_selection_cache_identity_and_compare_do_not_record_picks(self):
+        self.post('slot',{'slot':1,'revision':0})
+        before=self.path.read_bytes()
+        first=self.post('compare',{'revision':1,'selected_id':'nhl:1'})
+        second=self.post('compare',{'revision':1,'selected_id':'nhl:2'})
+        self.assertEqual(first['selection']['id'],'nhl:1')
+        self.assertEqual(second['selection']['id'],'nhl:2')
+        again=self.post('compare',{'revision':1,'selected_id':'nhl:1'})
+        first.pop('elapsed_seconds');again.pop('elapsed_seconds')
+        self.assertEqual(first,again)
+        self.assertIsNone(self.post('compare',{'revision':1})['selection'])
+        self.assertEqual(self.path.read_bytes(),before)
+        for value in ([],{},1,''):
+            with self.assertRaises(HTTPError):self.post('compare',{'revision':1,'selected_id':value})

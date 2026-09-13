@@ -20,6 +20,27 @@ It is experimental; see [method, results and limitations](pick-comparison.md).
 Results disappear after the draft state changes. The desktop launcher includes
 the schedule required for this feature.
 
+The optional **Compare final-pick coverage** view is separate from ordinary
+comparison. It is available with one place left while you are on the clock and
+requires `--workloads` and `--rates` as well as `--schedule`. It shows baseline and
+downside totals independently, replacing ordinary goalie value with qualified
+starter points. The signed goalie-minus-best-skater difference prices the roster
+place. Failed calendar weeks are a conditional proxy with unverified matchup
+boundaries and no relief appearances. Missing inputs leave ordinary tracking usable.
+Use an isolated practice database to review this feature before draft use:
+
+```sh
+uv run fantasy dashboard --db PATH_TO_PRACTICE.sqlite \
+  --schedule var/schedule-20262027-2026-09-10.json \
+  --workloads private/goalie-workload-review-2026-09-10-v2.json \
+  --rates var/goalie-start-rates-2026-09-10.json
+```
+
+Use **Compare** in a search result to include that player in the same bounded
+comparison, even outside the automatic shortlist. This records no pick. Unsupported,
+already drafted or non-fitting choices show a reason. **Record** remains a separate
+confirmation. Clear or change the selected comparison to discard previous advice.
+
 Use **My draft slot** to set the actual slot. **Record** opens a confirmation showing
 the player, current pick and receiving team. Record every team's picks in order,
 then inspect the refreshed recommendations and your roster. **Undo last pick**

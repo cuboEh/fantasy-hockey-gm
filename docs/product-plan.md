@@ -1,7 +1,7 @@
 # Product goal, MVP and next steps
 
-Product context last revised September 11, 2026. As of September 12, the
-[active PRD 1.0](PRD-1.0.md) governs immediate development and acceptance using
+Product context last revised September 11, 2026. As of September 13, the
+[active PRD 1.1](PRD-1.1.md) governs immediate development and acceptance using
 the [PRD workflow](reference/prd-workflow.md). This document retains broader product context,
 historical progress and future scope. Existing experiments remain evidence, not
 obligations to keep building.

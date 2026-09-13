@@ -13,8 +13,8 @@ the roster, and when taking that obvious pick is the best supported choice.
 This is an incremental acceptance contract for the existing tool. TODO means
 verification or implementation remains, not that the capability must be rebuilt.
 The operational MVP and previous studies remain documented in the
-[product plan](product-plan.md), [comparison notes](guides/pick-comparison.md) and
-[validation report](archive/validation-2026-09-11.md).
+[product plan](../product-plan.md), [comparison notes](../guides/pick-comparison.md) and
+[validation report](validation-2026-09-11.md).
 
 ## Scope summary
 
