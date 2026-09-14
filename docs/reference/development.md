@@ -2,7 +2,7 @@
 
 This reference describes an earlier implementation slice. Its "Next slices" and
 feature-availability statements are historical, not the current backlog. Use the
-[active PRD](../PRD-1.1.md) for development scope and the
+[active PRD](../PRD-2.0.md) for development scope and the
 [draft-day guide](../guides/draft-day.md) for current operations.
 
 The local implementation includes offline scoring, explicit skater role scenarios,

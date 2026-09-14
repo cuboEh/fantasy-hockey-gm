@@ -6,16 +6,22 @@ the league's scoring and constraints. Python and SQLite are sufficient.
 
 ## Current goal and milestones
 
-The [active PRD](docs/PRD-1.1.md) defines current delivery and acceptance; the
-[product plan](docs/product-plan.md) retains the broader roadmap. MVP 1 is a dependable
-September 13 draft companion: a reviewed league-specific board, Yahoo market
-comparison, fitting shortlists and manual tracking. MVP 2 returns to weekly usable
-games, lineup and streaming advice. A measurable edge is the objective, not an
-established result. Deeper search stays parked while these deliverables are finished.
+PRD 2.0 is active as of September 14: a dependable daily and weekly GM assistant,
+with explicit prediction-model development and research. The draft is complete.
+The [GM workspace](docs/guides/gm-workspace.md) now supports complete supplied
+league imports, dated statistical forecasts, lineup plans, gap explanations and
+single pickup comparisons. It preserves research context and dated reviews across
+refreshes. Launch an initialized workspace with `fantasy gm dashboard`.
 
-Deferred idea recorded in the [product plan](docs/product-plan.md): opponent
-strength, repeated matchups and playoff schedule opportunity. This does not change
-the current MVP 1 priority.
+The [active PRD](docs/PRD-2.0.md) records 29 verified requirements and two blocked
+requirements: supported Yahoo reads and broader daily/matchup forecast evaluation.
+The [research register](docs/reference/gm-forecast-research.md) records the completed
+baseline/recency comparison and its limitations. No predictive advantage is claimed.
+Current real-league actions require verified assignments, availability and workload.
+
+The [product plan](docs/product-plan.md) retains the broader roadmap, including
+later selected-offer trade analysis and further model experiments. Existing draft
+commands remain available for reference and isolated investigation.
 
 ## Latest model work
 
@@ -98,12 +104,10 @@ snapshots/                      Private dated source data, ignored by Git
 var/                            Private results and draft databases, ignored by Git
 ```
 
-MVP 1 now has a frozen working board and a rehearsed manual session: 373 supported
-Yahoo-eligible projections, 264 ADPs and an explicit restricted watchlist. See the
-[draft-day guide](docs/guides/draft-day.md) for current files, limitations and recovery.
-Draft start: September 13, approximately **7:30–7:40 p.m. MDT**. Your slot is
-still unknown. Next: set it when known and refresh material news before the draft. Weekly usable-game and streaming advice follows as MVP 2. More elaborate
-search is parked until evidence justifies it. Run checks with:
+The draft release is retained for reference. Active development is the
+[PRD 2.0 GM workspace](docs/guides/gm-workspace.md): supplied league imports,
+dated forecast research, daily lineup plans and single pickup comparisons.
+Current Yahoo inputs and connected reads still need verification. Run checks with:
 
 ```bash
 uv run python -m unittest discover -s tests -v

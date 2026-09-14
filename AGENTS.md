@@ -11,7 +11,7 @@ Do not use em dashes in writing.
 
 ## PRD workflow
 
-The active delivery contract is [PRD 1.1](docs/PRD-1.1.md).
+The active delivery contract is [PRD 2.0](docs/PRD-2.0.md).
 Read it and [the development workflow](docs/reference/prd-workflow.md) before feature work.
 `docs/product-plan.md` retains product context and future ideas; the active PRD
 governs the current increment. User instructions take precedence.
@@ -28,3 +28,7 @@ archived evidence. Preserve this layout and update links when moving documents.
   or unresolved concerns. Every broader experiment needs a decision and stopping rule.
 - Record unrelated discoveries as future work without expanding the active release.
 - Preserve private inputs and live draft state. Rehearse in isolated sessions.
+- Commit verified development milestones and push the development branch to origin
+  so progress is logged and earlier builds remain recoverable (user request,
+  September 14, 2026). Review staged files for private data before committing.
+  Preserve previous release branches; do not force-push or rewrite checkpoints.

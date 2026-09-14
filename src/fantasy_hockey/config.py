@@ -20,6 +20,13 @@ class LeagueConfig:
 def load_config(path: Path) -> LeagueConfig:
     with path.open("rb") as stream:
         raw = tomllib.load(stream, parse_float=Decimal)
+    return parse_config(raw)
+
+
+def parse_config(raw: object) -> LeagueConfig:
+    """Validate supplied settings independently of their file/provider format."""
+    if not isinstance(raw, dict):
+        raise ValueError("League configuration must be an object")
     league = raw.get("league", {})
     if not isinstance(league, dict) or league.get("scoring_type") != "h2h_points":
         raise ValueError("Only explicit league.scoring_type = 'h2h_points' is supported")

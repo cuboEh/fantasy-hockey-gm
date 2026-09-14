@@ -1,0 +1,349 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Fantasy Hockey GM</title>
+<style>
+:root{font:16px/1.5 system-ui,sans-serif;color:#e6edf5;background:#111923;color-scheme:dark}
+*{box-sizing:border-box}body{margin:0}main{max-width:1180px;margin:auto;padding:24px}
+h1{font-size:1.8rem;margin:0}h2{font-size:1.15rem;margin:0 0 12px}p{margin:8px 0}
+.muted{color:#a8b9cd}.eyebrow{font-size:.78rem;text-transform:uppercase;letter-spacing:.12em;color:#80d8bc}
+header,.toolbar{display:flex;justify-content:space-between;align-items:center;gap:16px;flex-wrap:wrap}
+.card{border:1px solid #354557;border-radius:10px;padding:18px;background:#182431;margin:16px 0}
+.notice{border-left:4px solid #dfb466}.error{color:#ffd2c9}.tag{font-size:.8rem;padding:4px 9px;background:#2a3c4b;border-radius:20px}
+button,input,select{font:inherit}select{max-width:100%;padding:7px}#candidate{max-width:330px}#research-rows button{padding:3px 8px}#day-plans details{margin:10px 0}#detail-evidence{max-height:420px;overflow:auto}input[type=file]{max-width:100%}button{border:1px solid #5f8d87;border-radius:6px;padding:8px 14px;cursor:pointer;background:#214d48;color:white}
+button:disabled{opacity:.5;cursor:wait}button:focus-visible,a:focus-visible,input:focus-visible,summary:focus-visible{outline:3px solid #80d8bc;outline-offset:3px}
+nav{display:flex;gap:18px;margin:16px 0}a{color:#80d8bc}table{border-collapse:collapse;width:100%;font-size:.9rem}th,td{text-align:left;padding:9px 12px;border-bottom:1px solid #354557;vertical-align:top}
+.table-wrap{overflow:auto}summary{cursor:pointer}pre{white-space:pre-wrap;overflow-wrap:anywhere;font-size:.82rem}#issues{padding-left:20px}.grid{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:18px}.grid .card{margin:0}input[type=search]{padding:7px;width:100%;max-width:300px}
+[hidden]{display:none!important}@media(max-width:650px){main{padding:14px}.grid{display:block}.grid .card{margin:16px 0}h1{font-size:1.5rem}th,td{padding:8px}nav{gap:12px;flex-wrap:wrap}}
+</style>
+</head>
+<body><main>
+<header><div><div class="eyebrow">GM workspace</div><h1>Fantasy Hockey GM</h1><p id="identity" class="muted">Loading workspace...</p></div><span id="kind" class="tag">No snapshot</span></header><p id="ids" class="muted"></p>
+<section class="card notice" aria-label="Current readiness"><strong id="readiness">Checking league state...</strong><p id="advice">Loading dated decision inputs.</p><p id="overview-freshness" class="muted"></p><p id="connection" class="muted">Yahoo read approval pending.</p></section>
+<div class="toolbar"><div><label for="snapshot">Supplied snapshot (JSON)</label><br><input id="snapshot" type="file" accept=".json,application/json"></div><div><button id="import" disabled>Import snapshot</button> <button id="refresh">Refresh view</button></div></div>
+<p id="message" role="status" aria-live="polite"></p><p id="error" class="error" role="alert"></p>
+<nav aria-label="Sections"><a href="#daily">Lineups</a><a href="#research">Players</a><a href="#pickups">Pickups</a><a href="#roster">Roster</a><a href="#league-rosters">League teams</a><a href="#sources">Data freshness</a><a href="#settings">League rules</a><a href="#attention">Missing information</a></nav>
+<section id="daily" class="card"><div class="toolbar"><h2>Daily lineups</h2><button id="save-review">Save dated review</button></div><p id="lineup-summary"></p><p id="goalie-summary" class="muted"></p><div id="day-plans"></div></section>
+<section id="research" class="card"><h2>Research players</h2><label for="player-search">Name or position</label><br><input id="player-search" type="search" placeholder="Search supplied player inventory"><p id="research-count" class="muted"></p><div class="table-wrap"><table><thead><tr><th>Player</th><th>Availability</th><th>Rate / appearance</th><th>Forecast role</th><th>Details</th></tr></thead><tbody id="research-rows"></tbody></table></div><div id="player-detail" hidden><button id="close-player">Back to results</button><h3 id="detail-name"></h3><p id="detail-summary"></p><details><summary>History, projected stats and workload evidence</summary><pre id="detail-evidence"></pre></details><details><summary>Changes since previous import</summary><pre id="detail-changes"></pre></details><button id="use-candidate">Compare this player</button></div></section>
+<section id="pickups" class="card"><h2>Compare a pickup</h2><p>Compare the entire resulting roster with keeping your current roster. Moves are executed manually in Yahoo.</p><div class="toolbar"><div><label for="candidate">Candidate</label><br><select id="candidate"></select></div><div><label for="drop">Drop</label><br><select id="drop"></select></div><button id="compare">Compare pickup</button></div><p id="comparison-message" role="status"></p><div id="comparison-result"></div><details><summary>Saved reviews and comparisons</summary><div id="saved-reviews"></div></details></section>
+<section id="attention" class="card"><h2>Needs attention</h2><p id="issue-summary"></p><details><summary>Inspect all input restrictions</summary><ul id="issues"></ul></details></section>
+<div class="grid"><section id="roster" class="card"><h2>Roster <span id="roster-count" class="tag">0</span></h2><label for="search">Find a player</label><br><input id="search" type="search" placeholder="Name or position"><div class="table-wrap"><table><thead><tr><th>Player</th><th>Eligible</th><th>Assigned</th></tr></thead><tbody id="players"></tbody></table></div><p id="roster-empty" class="muted">No roster imported.</p></section>
+<section id="settings" class="card"><h2>League rules</h2><p id="matchup"></p><div class="table-wrap"><table><tbody id="rules"></tbody></table></div><details><summary>Additional transaction and playoff rules</summary><div class="table-wrap"><table><tbody id="extra-rules"></tbody></table></div></details><details><summary>League and draft details</summary><div class="table-wrap"><table><tbody id="league-details"></tbody></table></div></details><details id="uninterpreted-section" hidden><summary>Supplied fields not yet interpreted</summary><pre id="uninterpreted"></pre></details><details><summary>Scoring weights and roster slots</summary><pre id="config">Unknown</pre></details></section></div>
+<section id="league-rosters" class="card"><h2>League teams</h2><p class="muted">Ownership as of the supplied snapshot. Current lineups and later transactions are not inferred.</p><div id="teams"></div></section>
+<section id="sources" class="card"><h2>Data freshness</h2><p id="import-times" class="muted"></p><div class="table-wrap"><table><thead><tr><th>Input</th><th>Status / coverage</th><th>Observed / expires</th><th>Source / last successful import</th></tr></thead><tbody id="inputs"></tbody></table></div><p class="muted">Freshness deadlines are supplied with each input. Unknown deadlines never count as current. Projected stats and participation are separate. Unknown workload never counts as zero.</p></section>
+</main>
+<script nonce="__TOKEN__">
+ 'use strict';
+const token='__TOKEN__';
+let activeToken = token;
+const el = id => document.getElementById(id);
+const coreRules = new Set(['lineup_lock', 'acquisition_limit', 'acquisitions_used',
+  'waiver_type', 'waiver_wait_days', 'goalie_minimum', 'goalie_qualification']);
+let current = null, busy = false, sequence = 0, boundaryTimer = null;
+const readable = value => {
+  if (value === null || value === undefined) return 'Unknown';
+  if (typeof value === 'boolean') return value ? 'Yes' : 'No';
+  if (Array.isArray(value)) return value.map(readable).join(', ');
+  return String(value).replaceAll('_', ' ');
+};
+function cell(row, value) {
+  const td = document.createElement('td');
+  td.textContent = readable(value);
+  row.append(td);
+}
+function tableRow(target, values) {
+  const tr = document.createElement('tr');
+  values.forEach(value => cell(tr, value));
+  target.append(tr);
+}
+function roster() {
+  const entries = current?.snapshot?.inputs.roster.data || [];
+  const query = el('search').value.toLowerCase();
+  el('players').replaceChildren();
+  const shown = entries.filter(player =>
+    (player.name + ' ' + (player.positions || []).join(' ')).toLowerCase().includes(query));
+  for (const player of shown) {
+    tableRow(el('players'), [player.name, (player.positions || []).join(', ') || null,
+      player.selected_position]);
+  }
+  el('roster-count').textContent = entries.length;
+  el('roster-empty').hidden = shown.length > 0;
+  el('roster-empty').textContent = entries.length ? 'No matching players.' : 'No roster imported.';
+}
+function leagueTeams(snapshot) {
+  const open = new Set([...el('teams').querySelectorAll('details[open]')].map(d => d.dataset.team));
+  el('teams').replaceChildren();
+  const teams = snapshot?.inputs.league_rosters?.data || [];
+  if (!teams.length) { el('teams').textContent = 'No league-wide rosters supplied.'; return; }
+  for (const team of teams) {
+    const details = document.createElement('details');
+    details.dataset.team = team.id;
+    details.open = open.has(team.id);
+    const summary = document.createElement('summary');
+    summary.textContent = team.name + ' (' + team.player_ids.length + ' players)';
+    const content = document.createElement('p');
+    content.textContent = team.player_ids.map(id => team.player_names?.[id] || ('Name unknown: ' + id)).join(', ');
+    details.append(summary, content);
+    el('teams').append(details);
+  }
+}
+function render(state) {
+  const priorKey = current?.state_key;
+  current = state;
+  if (priorKey && priorKey !== state.state_key) {
+    el('comparison-message').textContent = 'Inputs or time changed. Saved comparisons are historical; compare again.';
+    el('comparison-result').replaceChildren();
+  }
+  if (!contextLoaded) restoreContext();
+  const snapshot = state.snapshot;
+  el('identity').textContent = snapshot ? `${snapshot.league.name} / ${snapshot.team.name}` :
+    `League ${state.workspace.league_id} / Team ${state.workspace.team_id}`;
+  el('ids').textContent = `League ID: ${state.workspace.league_id}. Team ID: ${state.workspace.team_id}.`;
+  el('kind').textContent = snapshot ? readable(snapshot.data_type) : 'No snapshot';
+  el('readiness').textContent = state.snapshot_status === 'current_inputs' ? 'Supplied inputs are current' :
+    state.snapshot_status === 'empty' ? 'Import a snapshot to begin' : 'Inputs need review';
+  el('advice').textContent = state.advice_reason;
+  el('connection').textContent = state.yahoo_status;
+  el('overview-freshness').textContent = `Roster observed: ${state.inputs.roster?.observed_at || 'unknown'} (${readable(state.inputs.roster?.status)}). Forecasts: ${readable(state.inputs.forecasts?.status)}. Last successful import: ${state.last_success_at || 'never'}.`;
+  el('issues').replaceChildren();
+  for (const issue of state.issues) {
+    const li = document.createElement('li'); li.textContent = issue; el('issues').append(li);
+  }
+  el('issue-summary').textContent = state.issues.length ?
+    `${state.issues.length} input restrictions. ${state.issues[0]}` :
+    'No input restrictions detected. Review the dated decision evidence below.';
+  el('error').textContent = state.last_error ? `Import needs attention: ${state.last_error}.` : '';
+  el('inputs').replaceChildren();
+  for (const [name, input] of Object.entries(state.inputs)) {
+    tableRow(el('inputs'), [readable(name),
+      `${readable(input.status)} / ${input.coverage}${input.records === null ? '' : ` (${input.records} records)`}`,
+      `${input.observed_at || 'Unknown'} / ${input.expires_at || 'Unknown'}`,
+      `${input.source} / ${input.last_success_at || 'Never supplied'} / ${input.last_refresh_error || 'No refresh error'}`]);
+  }
+  el('import-times').textContent = `Last successful import: ${state.last_success_at || 'Never'}. ` +
+    `Last attempt: ${state.last_attempt_at || 'Never'}.`;
+  const settings = snapshot?.inputs.settings.data;
+  el('matchup').textContent = `Timezone: ${settings?.timezone || 'Unknown'}. Matchup: ` +
+    (settings?.matchup ? settings.matchup.start + ' to ' + settings.matchup.end : 'Unknown') + '.';
+  el('rules').replaceChildren(); el('extra-rules').replaceChildren();
+  for (const [key, value] of Object.entries(settings?.rules || {})) {
+    tableRow(el(coreRules.has(key) ? 'rules' : 'extra-rules'), [readable(key), readable(value)]);
+  }
+  el('league-details').replaceChildren();
+  for (const [key, value] of Object.entries(settings?.league_details || {})) {
+    tableRow(el('league-details'), [readable(key), readable(value)]);
+  }
+  el('uninterpreted-section').hidden = !Object.keys(settings?.uninterpreted || {}).length;
+  el('uninterpreted').textContent = JSON.stringify(settings?.uninterpreted || {}, null, 2);
+  el('config').textContent = settings?.config ? JSON.stringify(settings.config, null, 2) : 'Unknown';
+  roster(); leagueTeams(snapshot); renderDecisions(state); renderResearch(); renderChoices(); renderSaved();
+  clearTimeout(boundaryTimer);
+  if (state.next_change_at) {
+    const delay = Date.parse(state.next_change_at) - Date.parse(state.checked_at);
+    boundaryTimer = setTimeout(() => {
+      el('readiness').textContent = 'Time boundary reached; refreshing input status';
+      el('comparison-message').textContent = 'Time changed; previous comparison is historical until refreshed.';
+      el('comparison-result').replaceChildren();
+      if (!busy) refresh();
+    }, Math.max(0, Math.min(delay + 50, 2147483647)));
+  }
+}
+async function request(url, options = {}) {
+  const response = await fetch(url, {...options, signal: AbortSignal.timeout(15000)});
+  const data = await response.json();
+  if (!response.ok) throw Error(data.error || 'Request failed');
+  activeToken = response.headers.get('X-GM-Token') || activeToken;
+  return data;
+}
+async function refresh() {
+  const call = ++sequence;
+  try {
+    const state = await request('/api/state');
+    if (call === sequence) render(state);
+  } catch (error) {
+    if (call === sequence) {
+      el('error').textContent = `Cannot refresh: ${error.message}. Retry Refresh view.`;
+      el('readiness').textContent = 'Connection lost; displayed data may be stale';
+      el('lineup-summary').textContent = 'Connection lost. Displayed plans are historical; refresh before acting.';
+      el('comparison-result').replaceChildren();
+    }
+  }
+}
+el('search').addEventListener('input', roster);
+el('snapshot').addEventListener('change', () => {
+  el('import').disabled = !el('snapshot').files.length || busy;
+});
+el('refresh').addEventListener('click', refresh);
+el('import').addEventListener('click', async () => {
+  const file = el('snapshot').files[0];
+  if (!file || busy || !current) return;
+  busy = true; ++sequence;
+  el('import').disabled = true; el('refresh').disabled = true;
+  el('message').textContent = 'Validating snapshot...';
+  try {
+    if (file.size > 5000000) throw Error('Snapshot exceeds 5 MB');
+    const state = await request('/api/import', {method: 'POST', headers: {
+      'Content-Type': 'application/json', 'X-GM-Token': activeToken,
+      'X-GM-Revision': String(current.revision)}, body: await file.text()});
+    render(state);
+    el('message').textContent = 'Snapshot imported. Research filter preserved.';
+  } catch (error) {
+    await refresh();
+    el('error').textContent = `Import request was not confirmed: ${error.message}. ` +
+      'Check the workspace state below before retrying.';
+    el('message').textContent = '';
+  } finally {
+    busy = false;
+    el('import').disabled = !el('snapshot').files.length;
+    el('refresh').disabled = false;
+  }
+});
+let contextLoaded = false, selectedPlayer = null, researchScroll = 0;
+const fmt = value => value === null || value === undefined ? 'Unknown' : Number(value).toFixed(2);
+const node = (tag, text) => { const n=document.createElement(tag); if(text!==undefined)n.textContent=text; return n; };
+function contextKey() { return 'gm-view:' + current.workspace.league_id + ':' + current.workspace.team_id; }
+function saveContext() {
+  if (!current) return;
+  try { localStorage.setItem(contextKey(), JSON.stringify({search:el('search').value,
+    research:el('player-search').value, selectedPlayer, candidate:el('candidate').value,
+    drop:el('drop').value, researchScroll})); } catch (_) { /* Inspection works without browser storage. */ }
+}
+function restoreContext() {
+  contextLoaded=true;
+  try {
+    const c=JSON.parse(localStorage.getItem(contextKey()) || '{}');
+    el('search').value=c.search||''; el('player-search').value=c.research||'';
+    selectedPlayer=c.selectedPlayer||null; researchScroll=c.researchScroll||0;
+    el('candidate').dataset.restore=c.candidate||''; el('drop').dataset.restore=c.drop||'';
+  } catch (_) { /* Invalid local view preferences do not affect league data. */ }
+}
+function inventory() {
+  const all=new Map((current?.snapshot?.inputs.players?.data||[]).map(p=>[p.id,p]));
+  for(const p of current?.snapshot?.inputs.roster.data||[])all.set(p.id,p);
+  return [...all.values()];
+}
+function ratePoints(f) {
+  const weights=current?.snapshot?.inputs.settings.data?.config?.scoring?.[f?.kind];
+  if (!f?.rates || !weights) return null;
+  return Object.entries(weights).reduce((sum,[k,w])=>sum+Number(w)*Number(f.rates[k]||0),0);
+}
+function renderResearch() {
+  const query=el('player-search').value.toLowerCase();
+  const all=inventory().filter(p=>(p.name+' '+(p.positions||[]).join(' ')).toLowerCase().includes(query));
+  el('research-count').textContent=`${all.length} matching players. Showing up to 40; narrow the search for more.`;
+  el('research-rows').replaceChildren();
+  const forecasts=current?.snapshot?.inputs.forecasts.data||[];
+  const availability=current?.snapshot?.inputs.availability.data||[];
+  for(const p of all.slice(0,40)) {
+    const f=forecasts.find(f=>f.id===p.id); const a=availability.find(a=>a.id===p.id);
+    const row=node('tr'); [p.name,readable(a?.state),fmt(ratePoints(f)),readable(f?.model_role)].forEach(v=>cell(row,v));
+    const td=node('td');const button=node('button','Inspect');button.addEventListener('click',()=>{
+      researchScroll=scrollY;selectedPlayer=p.id;saveContext();renderPlayer();el('player-detail').scrollIntoView({block:'start'});
+    });td.append(button);row.append(td);el('research-rows').append(row);
+  }
+  renderPlayer();
+}
+function renderPlayer() {
+  const p=inventory().find(p=>p.id===selectedPlayer);
+  el('player-detail').hidden=!selectedPlayer;
+  if(!selectedPlayer)return;
+  el('detail-name').textContent=p?.name||'Previously selected player is no longer supplied';
+  const f=current?.snapshot?.inputs.forecasts.data?.find(f=>f.id===selectedPlayer);
+  el('detail-summary').textContent=f?.rates ?
+    `Historical: ${f.history?.appearances ?? 'unknown'} observed appearances, ${fmt(f.history?.points)} points. Projected rate: ${fmt(ratePoints(f))} points per appearance. Horizon: ${f.horizon_start} to ${f.horizon_end}. Issued ${f.issued_at}. ${f.model_role} model: ${f.model_version}.` :
+    'Numerical projection unavailable. Missing values remain unknown.';
+  if(f?.games?.length) {
+    const known=f.games.every(g=>g.expected_appearances!==null);
+    const appearances=known?f.games.reduce((n,g)=>n+Number(g.expected_appearances),0):null;
+    el('detail-summary').textContent+=` Horizon workload: ${fmt(appearances)} expected appearances; projected points: ${fmt(appearances===null||ratePoints(f)===null?null:appearances*ratePoints(f))}. Participation labels remain separate in the evidence.`;
+  }
+  el('detail-evidence').textContent=JSON.stringify(f||{reason:'No numerical forecast supplied'},null,2);
+  el('detail-changes').textContent=JSON.stringify(current.forecast_changes?.find(r=>r.id===selectedPlayer)||{reason:'No forecast changes recorded since previous import'},null,2);
+  const owned=(current?.snapshot?.inputs.roster.data||[]).some(r=>r.id===selectedPlayer);
+  el('use-candidate').disabled=!p||owned;
+  if(owned)el('detail-summary').textContent+=' This player is on your roster; a pickup comparison is not applicable.';
+}
+function renderChoices() {
+  const oldCandidate=el('candidate').value||el('candidate').dataset.restore||'';
+  const oldDrop=el('drop').value||el('drop').dataset.restore||'';
+  const own=new Set((current?.snapshot?.inputs.roster.data||[]).map(p=>p.id));
+  el('candidate').replaceChildren();el('drop').replaceChildren();
+  const option=(target,id,name)=>{const o=node('option',name);o.value=id;target.append(o);};
+  option(el('candidate'),'','Select a supplied player');option(el('drop'),'','Use a vacant regular roster place');
+  for(const p of inventory())if(!own.has(p.id))option(el('candidate'),p.id,p.name);
+  for(const p of current?.snapshot?.inputs.roster.data||[])option(el('drop'),p.id,p.name);
+  el('candidate').value=oldCandidate;el('drop').value=oldDrop;
+}
+function renderDecisions(state) {
+  const plan=state.lineups;
+  el('lineup-summary').textContent=plan?.days?.length ?
+    `${fmt(plan.remaining_points)} projected points from supported remaining games. ${plan.scope}` :
+    (plan?.reasons||['No supported lineup']).join('; ');
+  const g=plan?.goalie;
+  el('goalie-summary').textContent=g ? `Goalies: ${g.confirmed_earned ?? 'unknown'} confirmed earned / ${g.minimum ?? 'unknown'} minimum. ${fmt(g.future_expected)} expected future appearances in the points-first plan. Maximum supported goalie exposure: ${fmt(g.alternative_expected)}, costing ${fmt(g.alternative_point_cost)} projected points. ${g.warning}` : '';
+  const open=new Set([...el('day-plans').querySelectorAll('details[open]')].map(d=>d.dataset.day));
+  el('day-plans').replaceChildren();
+  for(const [i,day] of (plan?.days||[]).entries()) {
+    const d=node('details');d.dataset.day=day.date;d.open=open.has(day.date)||(!open.size&&i===0);
+    d.append(node('summary',`${day.date}: ${fmt(day.points)} projected points; ${readable(day.status)}`));
+    d.append(node('p',day.status==='restricted' ? day.reasons.join('; ') :
+      `${day.assignable_games} usable / ${day.scheduled_games} scheduled remaining games. ${day.bench.length} benched game opportunities. Gain over observed lineup: ${fmt(day.gain)}.`));
+    if(day.assignments){
+      const names=new Map(inventory().map(p=>[p.id,p.name]));
+      d.append(node('p',Object.entries(day.assignments).map(([id,pos])=>`${names.get(id)||id}: ${pos}${day.locked_player_ids.includes(id)?' (held)':''}`).join(' · ')));
+      d.append(node('p',day.changes.length?day.changes.map(c=>`${c.name}: ${c.from||'new'} → ${c.to}`).join('; '):'Keep the observed assignments.'));
+      if(day.goalie_alternative?.point_cost>0)d.append(node('p',`Goalie alternative: ${fmt(day.goalie_alternative.expected_goalie_appearances)} expected appearances at a cost of ${fmt(day.goalie_alternative.point_cost)} points. Assignments: ${Object.entries(day.goalie_alternative.assignments).map(([id,pos])=>(names.get(id)||id)+': '+pos).join(' · ')}`));
+      if(day.reasons.length)d.append(node('p',day.reasons.join('; ')));
+      if(day.gap_explanations?.length){const gaps=node('details');gaps.append(node('summary','Why production is unavailable or benched'));for(const reason of day.gap_explanations)gaps.append(node('p',reason));d.append(gaps);}
+      const detail=node('details');detail.append(node('summary','Scoring, gaps and workload evidence'),node('pre',JSON.stringify(day,null,2)));d.append(detail);
+    }
+    el('day-plans').append(d);
+  }
+  const today=plan?.days?.[0];
+  if(today?.changes?.length)el('advice').textContent=`Points-first lineup: ${today.changes.map(c=>c.name+' to '+c.to).join(', ')}. ${g?.needs_review?'Goalie minimum is unresolved or not yet earned; inspect the qualification alternative before acting.':'Review workload assumptions below.'}`;
+  else if(today && today.status!=='restricted')el('advice').textContent='Keep the observed lineup for supported inputs. Review goalie qualification and any excluded players.';
+}
+function showComparison(result,target) {
+  target.replaceChildren();
+  if(result.status==='restricted'){target.append(node('p',result.reasons.join('; ')));return;}
+  target.append(node('p',`${readable(result.decision)}: ${result.explanation}`));
+  target.append(node('p',`Projected net change: ${fmt(result.net_points)} points. Added usable: ${fmt(result.added_usable_points)}. Lost usable: ${fmt(result.lost_usable_points)}. Acquisition cost: ${result.acquisition_cost}.`));
+  target.append(node('p',result.rest_of_season ? `Rest-of-season net: ${fmt(result.rest_of_season.net_points)} through ${result.rest_of_season.through}. This includes the matchup; do not add the two gains.` : 'Rest-of-season opportunity cost is unknown.'));
+  const d=node('details');d.append(node('summary','Full resulting roster and assumptions'),node('pre',JSON.stringify(result,null,2)));target.append(d);
+}
+function renderSaved() {
+  el('saved-reviews').replaceChildren();
+  for(const saved of current.saved_decisions||[]) {
+    const d=node('details');d.append(node('summary',`${saved.at}: ${saved.kind} (${saved.historical?'historical, inputs changed':'matches current inputs'})`));
+    d.append(node('pre',JSON.stringify(saved.result,null,2)));el('saved-reviews').append(d);
+  }
+}
+async function decision(kind) {
+  if(busy||!current)return;
+  busy=true;el('compare').disabled=true;el('save-review').disabled=true;
+  const key=current.state_key;
+  el('comparison-message').textContent='Calculating and checking current inputs...';
+  try {
+    const body={state_key:key,request:kind==='pickup'?{candidate_id:el('candidate').value,drop_id:el('drop').value||null}:{}};
+    const saved=await request(kind==='pickup'?'/api/compare':'/api/review',{method:'POST',
+      headers:{'Content-Type':'application/json','X-GM-Token':activeToken},body:JSON.stringify(body)});
+    await refresh();
+    if(current.state_key!==saved.state_key){el('comparison-message').textContent='Inputs changed during review; the saved result is historical.';return;}
+    el('comparison-message').textContent='Dated review saved locally. No Yahoo action was performed.';
+    if(kind==='pickup')showComparison(saved.result,el('comparison-result'));
+  } catch(error) {
+    el('comparison-result').replaceChildren();
+    el('comparison-message').textContent=`Cannot complete review: ${error.message}. Refresh and retry. Roster research remains available.`;
+  } finally {busy=false;el('compare').disabled=false;el('save-review').disabled=false;saveContext();}
+}
+el('player-search').addEventListener('input',()=>{renderResearch();saveContext();});
+el('search').addEventListener('input',saveContext);
+el('candidate').addEventListener('change',saveContext);el('drop').addEventListener('change',saveContext);
+el('close-player').addEventListener('click',()=>{selectedPlayer=null;renderPlayer();saveContext();scrollTo(0,researchScroll);});
+el('use-candidate').addEventListener('click',()=>{el('candidate').value=selectedPlayer;saveContext();el('pickups').scrollIntoView({block:'start'});});
+el('compare').addEventListener('click',()=>decision('pickup'));
+el('save-review').addEventListener('click',()=>decision('lineup'));
+refresh();
+setInterval(() => { if (!busy) refresh(); }, 10000);
+</script></body></html>

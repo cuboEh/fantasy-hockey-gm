@@ -1,0 +1,150 @@
+{
+  "schema_version": 1,
+  "data_type": "illustrative",
+  "league": {
+    "id": "demo-league",
+    "name": "Illustrative league"
+  },
+  "team": {
+    "id": "demo-team",
+    "name": "Practice roster"
+  },
+  "inputs": {
+    "settings": {
+      "source": "Fictional acceptance fixture",
+      "observed_at": "2026-09-14T17:50:00+00:00",
+      "expires_at": "2026-09-14T22:00:00+00:00",
+      "coverage": "complete",
+      "reason": null,
+      "data": {
+        "config": {
+          "league": {
+            "scoring_type": "h2h_points"
+          },
+          "roster": {
+            "C": 1,
+            "G": 1,
+            "BN": 1
+          },
+          "scoring": {
+            "skater": {
+              "goals": 5,
+              "shots_on_goal": 0.5
+            },
+            "goalie": {
+              "wins": 4,
+              "goals_against": -2
+            }
+          }
+        },
+        "timezone": "America/Edmonton",
+        "matchup": {
+          "start": "2026-09-13",
+          "end": "2026-09-19"
+        },
+        "rules": {
+          "lineup_lock": "daily_today",
+          "acquisition_limit": 4,
+          "acquisitions_used": 1,
+          "waiver_type": null,
+          "waiver_wait_days": null,
+          "goalie_minimum": 3,
+          "goalie_qualification": "active_appearances"
+        }
+      }
+    },
+    "roster": {
+      "source": "Fictional acceptance fixture",
+      "observed_at": "2026-09-14T17:50:00+00:00",
+      "expires_at": "2026-09-14T22:00:00+00:00",
+      "coverage": "complete",
+      "reason": null,
+      "data": [
+        {
+          "id": "demo:1",
+          "name": "Example Center",
+          "nhl_team": "AAA",
+          "positions": [
+            "C"
+          ],
+          "selected_position": "C"
+        },
+        {
+          "id": "demo:2",
+          "name": "Example Goalie",
+          "nhl_team": "BBB",
+          "positions": [
+            "G"
+          ],
+          "selected_position": "G"
+        }
+      ]
+    },
+    "availability": {
+      "source": "Fictional acceptance fixture",
+      "observed_at": "2026-09-14T17:50:00+00:00",
+      "expires_at": "2026-09-14T22:00:00+00:00",
+      "coverage": "complete",
+      "reason": null,
+      "data": [
+        {
+          "id": "demo:1",
+          "state": "owned",
+          "owner_team_id": "demo-team",
+          "waiver_clears_at": null
+        },
+        {
+          "id": "demo:2",
+          "state": "owned",
+          "owner_team_id": "demo-team",
+          "waiver_clears_at": null
+        },
+        {
+          "id": "demo:3",
+          "state": "waivers",
+          "owner_team_id": null,
+          "waiver_clears_at": "2026-09-14T20:00:00+00:00"
+        }
+      ]
+    },
+    "schedule": {
+      "source": "Fictional acceptance fixture",
+      "observed_at": "2026-09-14T17:50:00+00:00",
+      "expires_at": "2026-09-14T22:00:00+00:00",
+      "coverage": "complete",
+      "reason": null,
+      "data": [
+        {
+          "id": "demo-game",
+          "teams": [
+            "AAA",
+            "BBB"
+          ],
+          "starts_at": "2026-09-14T18:30:00+00:00"
+        }
+      ]
+    },
+    "player_status": {
+      "source": "Fictional acceptance fixture",
+      "observed_at": "2026-09-14T17:50:00+00:00",
+      "expires_at": "2026-09-14T22:00:00+00:00",
+      "coverage": "complete",
+      "reason": null,
+      "data": [
+        {
+          "id": "demo:1",
+          "status": "unknown",
+          "confirmed": false
+        }
+      ]
+    },
+    "forecasts": {
+      "source": "Not supplied",
+      "observed_at": null,
+      "expires_at": null,
+      "coverage": "missing",
+      "reason": "No reviewed in-season forecast",
+      "data": null
+    }
+  }
+}

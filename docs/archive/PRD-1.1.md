@@ -130,13 +130,13 @@ simulated gains as independent validation. Keep private artifacts ignored.
 Implementation pointers belong in Notes; the observable requirements above are
 the acceptance contract. Upon activation, archive the completed PRD 1.0, move
 this document to the docs root, and update the active pointer and inbound links.
-The [completed PRD 1.0](archive/PRD-1.0.md) remains the prior verified delivery record.
+The [completed PRD 1.0](PRD-1.0.md) remains the prior verified delivery record.
 
 ## Overnight execution and bounded PRD chaining
 
 The user requested an extensive overnight queue and a follow-up topic on September
 13. The following defines that queue; it does not grant access to another machine,
-publish permission, or unlimited model usage. See the [server runbook](reference/overnight-server.md).
+publish permission, or unlimited model usage. See the [server runbook](../reference/overnight-server.md).
 
 1. Before launching unattended, verify the private checkout, required ignored inputs,
    authentication, Python/uv, and local browser tooling. Record an absolute stop time

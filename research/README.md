@@ -7,6 +7,7 @@ merely because it exists. Run from the repository root with
 
 | Files | Role |
 | --- | --- |
+| `audit_forecast_inputs`, `evaluate_gm_rates` | GM history coverage audit and one declared chronological baseline/recency comparison; see the [research register](../docs/reference/gm-forecast-research.md). |
 | `fetch_history` | Acquire the historical inputs needed for replay studies. |
 | `import_hockeyinsights_market` | Reproduce the older non-Yahoo rank proxy. |
 | `analogues`, `test_historical_analogues`, `replay_analogue_drafts` | Historical analogue helpers, study and draft replay. The `test_` runner is an experiment, not a unit-test suite. |
@@ -25,3 +26,8 @@ for frozen 2024-25 drafts and `rehearse_planner --audit-working PATH` for final-
 coverage and sensitive-choice review. See [results and reproduction commands](../docs/archive/validation-2026-09-11.md).
 The historical market is a retrospective proxy and missing participation prevents
 an advantage claim. Older exact-opponent-order results are not corrected evidence.
+
+GM input coverage audit: `audit_forecast_inputs.py` inspects normalized history
+without fitting models or inferring absences. See the
+[GM research register](../docs/reference/gm-forecast-research.md) for its decision,
+limitations and the next experiment contract.

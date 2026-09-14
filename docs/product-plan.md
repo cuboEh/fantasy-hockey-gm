@@ -1,7 +1,20 @@
 # Product goal, MVP and next steps
 
-Product context last revised September 11, 2026. As of September 13, the
-[active PRD 1.1](PRD-1.1.md) governs immediate development and acceptance using
+September 14 direction: the user reports the draft is complete. Development
+planning now moves to a dependable GM app covering roster gaps, projections,
+lineup advice, free agents and trades. See the
+[active PRD 2.0](PRD-2.0.md), accepted September 14. The dated draft priorities
+below remain historical context; PRD 1.1 is the completed draft delivery record.
+
+The user also endorsed explicit model strengthening and continued research on
+September 14. PRD 2.0 P2 now requires a reproducible statistical baseline,
+a research register including the user's schedule/opponent/concentration ideas,
+and a bounded enhancement experiment with chronological evaluation. The earlier
+pre-draft research pauses below are historical. Candidate improvements must earn
+promotion through evidence; continuing research does not authorize unlimited runs.
+
+Product context revised September 14, 2026. The
+[active PRD 2.0](PRD-2.0.md) governs immediate development and acceptance using
 the [PRD workflow](reference/prd-workflow.md). This document retains broader product context,
 historical progress and future scope. Existing experiments remain evidence, not
 obligations to keep building.
@@ -10,6 +23,16 @@ PRD 1.0's useful-guide acceptance passed September 12: all 25 requirements were
 verified, with 156 passing tests and an isolated browser/recovery rehearsal.
 Predictive advantage remains unproven. The dated progress sections below preserve
 the earlier sequence; they do not reopen completed PRD work.
+
+## September 14 operational feedback
+
+Yahoo read-access approval is still pending, confirmed by the user. During the
+completed draft, manual pick synchronization displaced independent research,
+the interface required too much scrolling, and recommendations stopped after
+approximately pick 12. The failure cause and exact state are unverified.
+PRD 2.0 P5-FR6 through P5-FR8 cover synchronization continuity, compact navigation
+and explicit recommendation outcomes/recovery. Investigate the old failure using
+isolated evidence before reusing the affected workflow; preserve the original draft.
 
 ## Goal
 

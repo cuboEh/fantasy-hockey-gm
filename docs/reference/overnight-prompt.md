@@ -1,7 +1,10 @@
+Historical September 13 prompt. This queue is complete and does not authorize
+new work under active PRD 2.0. Retained for the original handoff record.
+
 Complete the bounded overnight development queue for fantasy-hockey-gm.
 
 Read AGENTS.md, docs/reference/prd-workflow.md, docs/reference/overnight-server.md,
-docs/PRD-1.1.md (or its activated root location), and
+docs/archive/PRD-1.1.md, and
 var/overnight/run-plan.md. User requirements in these documents are the handoff
 from the originating conversation. Do not assume access to that conversation.
 
