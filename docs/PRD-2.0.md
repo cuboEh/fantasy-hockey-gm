@@ -3,8 +3,9 @@
 **Date:** September 14, 2026
 **Theme:** Dependable daily and weekly GM decisions, with model development and research
 **Status:** Active. Supplied-data implementation and isolated acceptance are delivered.
-Connected-read verification and broader daily/matchup forecast evaluation remain
-blocked by access and data availability. This release is not declared complete.
+Connected-read verification remains blocked by access. Daily/matchup forecast
+evaluation is in progress following the September 15 raw-data audit and approved
+participation-source investigation. This release is not declared complete.
 
 The draft is complete. This contract replaces the completed
 [PRD 1.1](archive/PRD-1.1.md) and its narrow roster-audit successor plan.
@@ -17,7 +18,7 @@ implementation or experiments; approval does not establish missing league facts.
 | Phase | Focus | Status |
 | --- | --- | --- |
 | P1 | Trustworthy league state | BLOCKED |
-| P2 | Auditable forecasts, model development and bounded research | BLOCKED |
+| P2 | Auditable forecasts, model development and bounded research | WIP |
 | P3 | Roster gaps and legal lineup suggestions | Done |
 | P4 | Free-agent add/drop comparisons | Done |
 | P5 | Everyday browser workflow and recovery verification | Done |
@@ -96,7 +97,7 @@ Keep credentials and league snapshots private, and external access outside scori
 | P2-FR4 | Save dated forecasts used in decisions and later compare workload and rate errors against a declared simple baseline. | Done | Dated reviews retain exact forecasts and inputs. Supplied-outcome evaluation reports coverage, appearance/Brier, conditional stat/rate and point errors, excluding late-frozen and duplicate cases. Real future outcome performance is not claimed. Evidence: `tests/test_gm_forecasts.py`, `tests/test_gm_decisions.py`; [guide](guides/gm-workspace.md). |
 | P2-FR5 | Produce a reproducible baseline that forecasts participation and individual scoring statistics separately before applying league weights. | Done | Reproducible 730-day stat-rate baseline with 20 pooled appearance equivalents; separate Beta-smoothed workload requires an explicit eligible cohort. Same-day/future records excluded. Missing history remains unsupported. No dated external forecast was available for the comparison period. Evidence: `tests/test_gm_forecasts.py`, [research register](reference/gm-forecast-research.md). |
 | P2-FR6 | Maintain a sourced research register linking each candidate signal to a forecast target or roster decision, required data, bounded experiment and accept/reject/inconclusive result. | Done | Sourced register connects user ideas to targets, required inputs and bounded decisions; first recency candidate result is recorded as rejected for general replacement. Further ideas remain a queue, not implied default adjustments. See [research register](reference/gm-forecast-research.md). |
-| P2-FR7 | Evaluate baseline and candidate models on identical chronological cases and report coverage, workload error, stat/point error and uncertainty in their differences by horizon and player group. | BLOCKED | Identical chronological next-observed-game cases, stat/point errors, groups and paired week intervals are delivered; listed-goalie workload is a separate diagnostic. General daily/matchup participation cohorts and untouched outcomes are unavailable, so full horizon evaluation remains unverified. Evidence: `var/prd-2.0/p2-comparison/results/`, [research register](reference/gm-forecast-research.md). |
+| P2-FR7 | Evaluate baseline and candidate models on identical chronological cases and report coverage, workload error, stat/point error and uncertainty in their differences by horizon and player group. | WIP | Conditional next-game comparison is delivered. September 15 audit recovers 667,586 exposure records from 14 seasons; a 30-game source pilot verifies 1,367 dressed/scratch outcomes and supports one-season expansion. Daily/matchup evaluation still needs declared prediction-time player cohorts and separate scoring-conflict exclusions. Post-game roster reports are outcome evidence, not pregame features. See [participation audit](reference/participation-data-audit.md), tests/test_participation_records.py and tests/test_participation_pilot.py. |
 | P2-FR8 | Keep experimental forecasts separate from the working model and expose the evidence and version change when a candidate is promoted or reverted. | Done | Experimental model role is explicit and excluded from working advice. The unpromoted recency version cannot be labeled working. Saved inputs and before/after model/source changes retain review/rollback evidence. No automatic promotion command exists. Evidence: `tests/test_gm_forecasts.py`, `tests/test_gm_decisions.py`. |
 | P2-FR9 | Complete and document a bounded comparison of the baseline with at least one data-supported enhancement selected through the research register. | Done | One predeclared baseline/60-day recency comparison completed on 48,564 conditional-rate cases. Skater error worsened; the candidate failed the general replacement criterion and was not promoted. Includes separate listed-goalie diagnostic, coverage and limitations. Evidence: `var/prd-2.0/p2-comparison/plan.json`, `results/report.json`, `results/predictions.jsonl`. |
 
@@ -297,9 +298,11 @@ under `var/prd-2.0/p5/`; private league inputs remain ignored and source files
 unchanged. The existing draft recommendation incident remains undiagnosed and its
 workflow was not reused.
 
-Two requirements remain blocked. P1-FR5 needs approved and verified supported
-Yahoo reads. P2-FR7 needs adequate eligible-cohort/outcome data for daily and matchup
-forecast evaluation; conditional next-game results do not fill that gap. The
+P1-FR5 remains blocked on approved and verified supported Yahoo reads. P2-FR7 was
+reopened on September 15: missing normalized fields did not establish that raw
+participation data was unavailable. Its audit and source pilot now support further
+data engineering. Daily/matchup evaluation remains unfinished; conditional
+next-game results do not fill that gap. The
 current real workspace also needs verified timezone/matchup dates, actual lineup
 assignments, current transaction/availability and participation information before
 its plans can be considered actionable. Those values are not inferred from the
@@ -308,6 +311,6 @@ not to resend the league rosters.
 
 The connected release and predictive performance are not certified. Do not mark
 these gates complete using mock authentication, simulated practice dates or
-historical rates alone. Approved read access and dated observation collection are
-the next dependent steps; no further parameter search is authorized by the
-completed experiment plan.
+historical rates alone. Approved reads, participation-data reconciliation and dated
+observation collection are the next steps. The September 15 user authorization
+covers the data audit and proposed source expansion, not a new parameter search.

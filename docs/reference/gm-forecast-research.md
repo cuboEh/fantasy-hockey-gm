@@ -1,6 +1,6 @@
 # GM forecast research register
 
-September 14, 2026. P2-FR6/P2-FR7 work in progress. This register extends the
+Updated September 15, 2026. P2-FR6 is delivered; P2-FR7 remains in progress. This register extends the
 [model design](model-design.md) and [PRD 2.0](../PRD-2.0.md). It records input
 readiness and experiment decisions, not evidence that a stronger model exists.
 
@@ -33,6 +33,12 @@ called untouched test seasons. Any promotion claim needs prospective frozen
 forecasts or genuinely untouched outcomes.
 
 ## Sources and candidate register
+
+The September 15 [raw participation audit](participation-data-audit.md) supersedes
+the earlier header-only readiness assessment: ice time and actual starter labels
+are recoverable, and the 30-game roster-source pilot passes participation checks.
+One-season expansion is underway. These are historical outcomes; pregame cohort
+selection and full daily/matchup model evaluation still require explicit work.
 
 MoneyPuck describes separate pregame, goalie-start and shot-quality models. Its
 starter model uses workload/rest and performance inputs, while confirmed starter
