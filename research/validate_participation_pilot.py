@@ -68,6 +68,7 @@ def parse_report(html, game_id, game_date):
     if f'{d.strftime("%B")} {d.day}, {d.year}' not in text or 'Final' not in text:
         raise ValueError('Official report date/final state mismatch')
     blocks = []
+    block_tables = {}
     for table in parser.root.nodes('table'):
         rows = []
         for tr in table.children:
@@ -86,6 +87,29 @@ def parse_report(html, game_id, game_date):
             block.append({'number': int(number), 'position': position, 'name': name,
                           'bold': 'bold' in cells[0].attrs.get('class', '').split()})
         blocks.append(block)
+        block_tables[table] = block
+    scratch_sections = [n for n in parser.root.nodes('tr') if n.attrs.get('id') == 'Scratches']
+    if scratch_sections:
+        if len(scratch_sections) != 1:
+            raise ValueError('Ambiguous scratch section')
+        section = scratch_sections[0]
+        cells = [n for n in section.children if isinstance(n, Node) and n.tag == 'td']
+        if len(cells) != 2:
+            raise ValueError('Expected two scratch team cells')
+        scratch_tables = set(section.nodes('table'))
+        dressed_blocks = [block for table, block in block_tables.items() if table not in scratch_tables]
+        if len(dressed_blocks) != 2:
+            raise ValueError('Expected two dressed roster tables')
+        scratch_blocks = []
+        for cell in cells:
+            found = [block_tables[n] for n in cell.nodes('table') if n in block_tables]
+            if len(found) == 1:
+                scratch_blocks.append(found[0])
+            elif not found and not cell.text().strip():
+                scratch_blocks.append([])
+            else:
+                raise ValueError('Unrecognized empty scratch report cell')
+        blocks = dressed_blocks + scratch_blocks
     if len(blocks) != 4:
         raise ValueError(f'Expected dressed and scratch tables for both teams, found {len(blocks)}')
     return dict(zip(('away_dressed', 'home_dressed', 'away_scratches', 'home_scratches'), blocks))
@@ -219,6 +243,10 @@ def main():
     for path, expected in selection['inputs_sha256'].items():
         if hashlib.sha256(Path(path).read_bytes()).hexdigest() != expected:
             raise ValueError('Selection input changed')
+    for kind in ('nhl_schedule', 'skater_box', 'goalie_box'):
+        path = a.directory / f'{kind}_{year}.csv'
+        if str(path) not in selection['inputs_sha256']:
+            raise ValueError('Validator directory differs from selection sources')
     def read(kind):
         with (a.directory / f'{kind}_{year}.csv').open() as stream:
             return list(csv.DictReader(stream))

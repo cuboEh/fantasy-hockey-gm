@@ -75,8 +75,48 @@ retain URL, retrieval time and content hash. Access-denied or rate-limit respons
 suspend further uncached requests, without a browser workaround.
 
 Evidence: `pilot/selection.json`, `pilot/fetch-results.json`,
-`identity-reviews.json`, and `pilot-final/report.json`. The latter supports the
-authorized one-season expansion; expansion results are a separate milestone.
+`identity-reviews.json`, and `pilot-final/report.json`.
+
+## Completed one-season expansion
+
+All 1,312 regular-season games in the season ending 2026 downloaded and passed
+participation reconciliation. The ledger contains 60,596 records across 32 teams
+and 1,091 player IDs:
+
+| Observed role | Records |
+| --- | ---: |
+| Skater with positive ice time | 47,230 |
+| Listed skater with zero ice time | 1 |
+| Starting goalie | 2,624 |
+| Relief goalie | 144 |
+| Listed unused goalie | 2,479 |
+| Scratch | 8,118 |
+
+There are 53 listed players without a positive-ice-time record, including 28 who
+appear only as scratches. This is information the appearance-only dataset could
+not supply. Participation here uses recorded positive ice time, with explicit
+listed-zero-time categories; it does not independently certify Yahoo's goalie
+qualification counts or every official games-played convention.
+
+The larger sample required support for an explicitly empty scratch table on one
+side. The parser preserves home/away placement and rejects nonempty unrecognized
+content. There were 669 contextual identity reviews covering 23 ID/name variants.
+When a scratch has no played-game jersey record, an explicit reviewed ID/name
+alias can reconcile the team-specific raw scratch list and official report. This
+is recorded separately from jersey corroboration, never inferred automatically
+from a fuzzy name score. Reviewed aliases remain scoped to game/team/player.
+
+Twenty-four goalie records retain scoring-stat conflicts. The participation ledger
+does not supply fully validated fantasy-point targets: later scoring evaluation
+must also apply existing normalized-history source conflicts and verify all scoring
+categories. An empty exposure-conflict list alone does not certify a scoring line.
+
+Private evidence: `season/selection.json`, `season/fetch-results.json`,
+`season-identity-reviews.json`, `season-validation/report.json`, and
+`season-validation/participation-outcomes.jsonl`. All requests completed without a
+reported download error. The original audited sources and saved league inputs
+retain their hashes (`source-preservation.json`). No additional seasons were
+downloaded. The audit and this source expansion are complete.
 
 ## What these records establish
 
@@ -112,7 +152,8 @@ those reviews are checked before use. Failed identities exclude the whole game
 from its verified participation ledger. Statistical conflicts remain attached to
 otherwise supported exposure records.
 
-The full unittest suite passes 229 tests, including duplicate identities, missing
+The full unittest suite passes 230 tests, including duplicate identities, missing
 game IDs, wrong-season releases, corrupted receipts, wrong report dates,
-contradictory zero-time records, scoped alias reviews and scoring/workload quality
-separation. Evidence: `var/prd-2.0/p2-participation-audit/tests.log`.
+contradictory zero-time records, scoped alias reviews, explicit empty scratch
+tables and scoring/workload quality separation. Evidence:
+`var/prd-2.0/p2-participation-audit/tests-season.log`.

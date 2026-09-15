@@ -37,8 +37,10 @@ forecasts or genuinely untouched outcomes.
 The September 15 [raw participation audit](participation-data-audit.md) supersedes
 the earlier header-only readiness assessment: ice time and actual starter labels
 are recoverable, and the 30-game roster-source pilot passes participation checks.
-One-season expansion is underway. These are historical outcomes; pregame cohort
-selection and full daily/matchup model evaluation still require explicit work.
+The one-season expansion also passes: all 1,312 games reconcile, supplying 60,596
+participation records including 8,118 scratches. These are historical outcomes;
+pregame cohort selection and full daily/matchup model evaluation still require
+explicit work. Source availability is no longer the reason to stop P2-FR7.
 
 MoneyPuck describes separate pregame, goalie-start and shot-quality models. Its
 starter model uses workload/rest and performance inputs, while confirmed starter
@@ -54,9 +56,9 @@ itself establish incremental fantasy forecast accuracy.
 | Candidate / user idea | Target and required input | Bounded next decision | Result so far |
 | --- | --- | --- | --- |
 | Current form and recency | Next-game scoring-stat rates; dated observed games | Compare one fixed recency/shrinkage candidate with a simple expanding-history baseline on identical chronological cases | Completed; rejected as a general replacement, results below |
-| Ice time and PP role | Opportunity and scoring rates; dated TOI and PP TOI | Normalize one season first; verify units and player/game joins before expanding | Raw TOI headers found; PP exposure coverage unverified |
+| Ice time and PP role | Opportunity and scoring rates; dated TOI and PP TOI | Normalize one season first; verify units and player/game joins before expanding | Ice time recovered across 14 seasons and reconciled in the one-season roster audit; PP exposure remains unverified |
 | Injuries, trades, linemates and competition | Participation and deployment; dated changes known at forecast time | Validate one sourced change history or retain explicit conditional scenarios | Normalized change history missing |
-| Goalie workload and performance | Starts, relief, shot exposure and saves separately; explicit participation and starter observations | Validate raw starter semantics and nonappearance coverage before fitting | Starter header found; reliable absence labels missing |
+| Goalie workload and performance | Starts, relief, shot exposure and saves separately; explicit participation and starter observations | Validate raw starter semantics and nonappearance coverage before fitting | One season reconciles 2,624 starts, 144 relief appearances and 2,479 unused listed goalies; scoring conflicts remain excluded and pregame cohort construction is still required |
 | NHL plus MoneyPuck, xG and assist composition | Future scoring stats; dated event or game aggregates | Check one as-of join before comparing a single feature addition | Season totals exist; within-season availability not established |
 | Age, experience and sparse history | Rate priors; dated biographical and exposure data | Declare sparse-history groups and compare one pooled prior | Deferred until baseline coverage is defined |
 | Opponent strength and schedule difficulty | Future per-game rates; opponent features computed before games | Compare one adjustment on the same eligible cases | No experiment run |

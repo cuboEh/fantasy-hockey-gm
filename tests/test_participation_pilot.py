@@ -67,6 +67,20 @@ class ParticipationPilotTests(unittest.TestCase):
             with self.assertRaises(ValueError):
                 parse_report(changed, '2025020001', '2025-10-01')
 
+    def test_explicit_empty_scratch_side_does_not_shift_home_and_away(self):
+        _, html, _, _ = self.fixture()
+        tables = html.split('<table>')[1:]
+        dressed = ''.join('<table>'+t for t in tables[:2])
+        home_scratches = '<table>'+tables[3]
+        report = ('Game 0001 October 1, 2025 Final'+dressed+
+                  '<table><tr id="Scratches"><td><table><tr><td>&nbsp;</td></tr></table></td>'+
+                  '<td>'+home_scratches+'</td></tr></table>')
+        parsed = parse_report(report, '2025020001', '2025-10-01')
+        self.assertEqual(parsed['away_scratches'], [])
+        self.assertEqual(parsed['home_scratches'][0]['name'], 'Beta Scratch')
+        with self.assertRaises(ValueError):
+            parse_report(report.replace('&nbsp;', 'Unavailable'), '2025020001', '2025-10-01')
+
     def test_jersey_alone_cannot_establish_identity(self):
         raw, html, saved, schedule = self.fixture()
         result, rows = self.validate(raw, html.replace('Alpha Skater', 'Different Person'), saved, schedule)
