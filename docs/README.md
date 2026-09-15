@@ -2,8 +2,8 @@
 
 Active increment: [PRD 2.0](PRD-2.0.md), the daily and weekly GM assistant with
 model development and research. Supplied-data implementation is verified; connected
-Yahoo reads remain blocked, while participation-data work for broader forecast
-evaluation is in progress. See the
+Yahoo reads remain blocked. Participation-data reconciliation and the paired
+daily/seven-day forecast evaluation are delivered with their limits recorded. See the
 [GM workspace guide](guides/gm-workspace.md) for delivered behavior and limits.
 The completed draft releases are [PRD 1.1](archive/PRD-1.1.md) and
 [PRD 1.0](archive/PRD-1.0.md). See the [server runbook](reference/overnight-server.md)
@@ -35,6 +35,7 @@ Development workflow, model descriptions and source investigations. Dated implem
 - [Multi-source fantasy model](reference/model-design.md)
 - [GM forecast research register](reference/gm-forecast-research.md)
 - [Participation data audit](reference/participation-data-audit.md)
+- [Daily and seven-day forecast evaluation](reference/gm-horizon-evaluation.md)
 - [PRD development workflow](reference/prd-workflow.md)
 - [Repository map and consolidation audit](reference/repository-map.md)
 - [Broad source survey, September 10, 2026](reference/source-survey.md)

@@ -137,6 +137,11 @@ inspected seasons support labeled retrospective development evaluation; genuinel
 untouched or prospective outcomes are required for an independent promotion claim.
 Collect dated player lists and forecasts before games for that prospective study.
 
+Follow-up: the [daily/seven-day comparison](gm-horizon-evaluation.md) is now
+complete. It evaluates 153,263 paired cases using frozen pre-cutoff cohorts,
+reports coverage and separate workload/scoring errors, and retains the baseline.
+Its retrospective result does not supply independent promotion evidence.
+
 ## Reproduction and verification
 
 Use new output directories to preserve existing evidence:

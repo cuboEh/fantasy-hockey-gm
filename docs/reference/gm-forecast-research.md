@@ -1,6 +1,6 @@
 # GM forecast research register
 
-Updated September 15, 2026. P2-FR6 is delivered; P2-FR7 remains in progress. This register extends the
+Updated September 15, 2026. P2-FR6 and P2-FR7 are delivered. This register extends the
 [model design](model-design.md) and [PRD 2.0](../PRD-2.0.md). It records input
 readiness and experiment decisions, not evidence that a stronger model exists.
 
@@ -38,9 +38,10 @@ The September 15 [raw participation audit](participation-data-audit.md) supersed
 the earlier header-only readiness assessment: ice time and actual starter labels
 are recoverable, and the 30-game roster-source pilot passes participation checks.
 The one-season expansion also passes: all 1,312 games reconcile, supplying 60,596
-participation records including 8,118 scratches. These are historical outcomes;
-pregame cohort selection and full daily/matchup model evaluation still require
-explicit work. Source availability is no longer the reason to stop P2-FR7.
+participation records including 8,118 scratches. The subsequent
+[daily/seven-day evaluation](gm-horizon-evaluation.md) freezes a pre-cutoff cohort
+and compares both models on 153,263 paired cases. Its retrospective assumptions,
+coverage, uncertainty and negative promotion result are recorded separately.
 
 MoneyPuck describes separate pregame, goalie-start and shot-quality models. Its
 starter model uses workload/rest and performance inputs, while confirmed starter
@@ -58,7 +59,7 @@ itself establish incremental fantasy forecast accuracy.
 | Current form and recency | Next-game scoring-stat rates; dated observed games | Compare one fixed recency/shrinkage candidate with a simple expanding-history baseline on identical chronological cases | Completed; rejected as a general replacement, results below |
 | Ice time and PP role | Opportunity and scoring rates; dated TOI and PP TOI | Normalize one season first; verify units and player/game joins before expanding | Ice time recovered across 14 seasons and reconciled in the one-season roster audit; PP exposure remains unverified |
 | Injuries, trades, linemates and competition | Participation and deployment; dated changes known at forecast time | Validate one sourced change history or retain explicit conditional scenarios | Normalized change history missing |
-| Goalie workload and performance | Starts, relief, shot exposure and saves separately; explicit participation and starter observations | Validate raw starter semantics and nonappearance coverage before fitting | One season reconciles 2,624 starts, 144 relief appearances and 2,479 unused listed goalies; scoring conflicts remain excluded and pregame cohort construction is still required |
+| Goalie workload and performance | Starts, relief, shot exposure and saves separately; explicit participation and starter observations | Validate raw starter semantics and nonappearance coverage before fitting | One season reconciles 2,624 starts, 144 relief appearances and 2,479 unused listed goalies. Daily/seven-day evaluation is delivered with frozen pre-cutoff cohorts; goalie point gains are inconclusive and weekly any-appearance Brier worsens. Conflicting scoring targets remain excluded. |
 | NHL plus MoneyPuck, xG and assist composition | Future scoring stats; dated event or game aggregates | Check one as-of join before comparing a single feature addition | Season totals exist; within-season availability not established |
 | Age, experience and sparse history | Rate priors; dated biographical and exposure data | Declare sparse-history groups and compare one pooled prior | Deferred until baseline coverage is defined |
 | Opponent strength and schedule difficulty | Future per-game rates; opponent features computed before games | Compare one adjustment on the same eligible cases | No experiment run |
@@ -115,8 +116,9 @@ history groups, exclusions and the full prediction ledger are in private evidenc
 A separate diagnostic on 5,086 explicitly listed goalie outcomes reduced Brier
 error from 0.2372 to 0.2342 with recency. This is conditional on appearing in the
 source's listed cohort. It does not establish daily roster membership or calibrate
-current starter probabilities. General daily and matchup workload error remains
-unverified without those labels.
+current starter probabilities. At that stage, general daily and multi-day workload
+error remained unverified without those labels. The recovered-data comparison is
+documented in the [horizon evaluation](gm-horizon-evaluation.md).
 
 Decision: **reject this candidate as a general replacement** under the predeclared
 criterion requiring improved paired point errors for both kinds. The modest goalie

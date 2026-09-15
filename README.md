@@ -13,22 +13,23 @@ league imports, dated statistical forecasts, lineup plans, gap explanations and
 single pickup comparisons. It preserves research context and dated reviews across
 refreshes. Launch an initialized workspace with `fantasy gm dashboard`.
 
-The [active PRD](docs/PRD-2.0.md) records 29 verified requirements and two blocked
-requirements: supported Yahoo reads and broader daily/matchup forecast evaluation.
-The [research register](docs/reference/gm-forecast-research.md) records the completed
-baseline/recency comparison and its limitations. No predictive advantage is claimed.
+The [active PRD](docs/PRD-2.0.md) records 30 verified requirements and one blocked
+requirement: supported Yahoo reads. The
+[daily/seven-day evaluation](docs/reference/gm-horizon-evaluation.md) compares the
+baseline and unchanged recency candidate on 153,263 paired cases. The candidate
+remains experimental; no independent predictive advantage is claimed.
 Current real-league actions require verified assignments, availability and workload.
 
 The [product plan](docs/product-plan.md) retains the broader roadmap, including
 later selected-offer trade analysis and further model experiments. Existing draft
 commands remain available for reference and isolated investigation.
 
-## Latest model work
+## Earlier draft model work
 
-The seven test picks have been cleared with a backup. The live session starts at
-pick 1, with your slot still unset. Seven priority players now have dated notes
-in their dashboard details; see the [evidence refresh](docs/archive/priority-refresh-2026-09-11.md).
-Numerical forecasts are unchanged. NHL team diversification and stacking are
+The archived draft notes record clearing seven test picks with a backup and
+initializing the draft session at pick 1. Seven priority players received dated
+dashboard notes; see the [evidence refresh](docs/archive/priority-refresh-2026-09-11.md).
+That refresh left numerical forecasts unchanged. NHL team diversification and stacking are
 recorded as deferred ideas in the product plan.
 
 The [validation report](docs/archive/validation-2026-09-11.md) records the historical replay,
