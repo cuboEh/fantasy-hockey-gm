@@ -62,6 +62,15 @@ class YahooConnectionTests(unittest.TestCase):
         self.assertEqual(json.loads(self.path.read_text())['refresh_token'], 'new-refresh')
         self.assertEqual(self.path.stat().st_mode & 0o777, 0o600)
 
+    def test_diagnostic_consent_requests_only_fantasy_read(self):
+        url = self.credentials.authorization_url('random-state', explicit_read_scope=True)
+        query = parse_qs(urlsplit(url).query)
+        self.assertEqual(query['scope'], ['fspt-r'])
+        self.assertEqual(query['prompt'], ['consent'])
+        self.assertEqual(query['state'], ['random-state'])
+        self.assertEqual(query['redirect_uri'], [self.credentials.redirect_uri])
+        self.assertNotIn('example-secret', url)
+
     def test_incomplete_tokens_preserve_previous_file(self):
         private_json(self.path, {'previous': 'unchanged'})
         before = self.path.read_bytes()

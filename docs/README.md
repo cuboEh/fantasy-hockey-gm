@@ -2,7 +2,7 @@
 
 Active increment: [PRD 2.0](PRD-2.0.md), the daily and weekly GM assistant with
 model development and research. Supplied-data implementation is verified; connected
-Yahoo reads await user OAuth consent and league reconciliation. Participation-data reconciliation and the paired
+Yahoo reads return HTTP 403 despite successful OAuth consent; league reconciliation remains incomplete. Participation-data reconciliation and the paired
 daily/seven-day forecast evaluation are delivered with their limits recorded. See the
 [GM workspace guide](guides/gm-workspace.md) for delivered behavior and limits.
 The completed draft releases are [PRD 1.1](archive/PRD-1.1.md) and

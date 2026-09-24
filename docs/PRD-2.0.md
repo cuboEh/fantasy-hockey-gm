@@ -3,7 +3,7 @@
 **Date:** September 14, 2026
 **Theme:** Dependable daily and weekly GM decisions, with model development and research
 **Status:** Active. Supplied-data implementation and isolated acceptance are delivered.
-Yahoo read-only access is approved. Connected-read verification awaits user OAuth consent and league reconciliation. The September 15 data
+Yahoo read-only access is approved. OAuth consent succeeded, but Fantasy API reads return HTTP 403. Connected-read verification and league reconciliation remain incomplete. The September 15 data
 audit and paired daily/seven-day forecast evaluation are delivered, with
 retrospective limitations recorded. This release is not declared complete.
 
@@ -80,7 +80,7 @@ can satisfy a requirement. Status and Notes below record actual progress.
 | P1-FR2 | Show source observation time, last successful refresh, coverage and refresh errors for each decision input. | Done | Per-input observation, expiry, coverage, last successful import and refresh errors are visible; overview shows roster data age. Unknown freshness is never current. Evidence: `tests/test_gm.py`, `var/prd-2.0/p5/supplied-browser-final.json`. |
 | P1-FR3 | A failed or partial refresh preserves the last complete snapshot and marks affected advice unavailable or historical. | Done | Pending/crashed, truncated, malformed, superseded and denied-read attempts retain the complete snapshot and restrict advice; successful retry recovers. Authorization failure exercised through an injected reader, not a real Yahoo session. Evidence: `tests/test_gm.py`, `tests/test_gm_decisions.py`, `var/prd-2.0/p5/browser-results.json`. |
 | P1-FR4 | A roster, rule, eligibility, forecast, availability or relevant clock change invalidates affected advice. | Done | Saved decisions freeze input identity, reject stale requests before/after calculation and become historical after imports, expiry or locks. Browser lock transitions retire displayed comparisons. Evidence: `tests/test_gm_decisions.py`, `var/prd-2.0/p5/dated-browser-results.json`. |
-| P1-FR5 | The manager can load and inspect a validated supplied snapshot and, when access is verified, refresh through supported Yahoo reads. | WIP | Yahoo read-only approval reported by the user September 16. September 24: local HTTPS OAuth login, private token refresh and a fixed hockey-team GET connection check implemented. Ten tests in `tests/test_yahoo_connection.py` pass, including a real loopback TLS callback with synthetic credentials. Actual user consent, live reads, league/team reconciliation and normalization into a complete GM snapshot remain pending. No Yahoo scraping or writes. See [connection guide](guides/yahoo-connection.md). |
+| P1-FR5 | The manager can load and inspect a validated supplied snapshot and, when access is verified, refresh through supported Yahoo reads. | WIP | Yahoo read-only approval reported by the user September 16. September 24: local HTTPS OAuth login, private token refresh and a fixed hockey-team GET connection check implemented. Eleven tests in `tests/test_yahoo_connection.py` pass, including a real loopback TLS callback with synthetic credentials. Actual OAuth consent succeeded, but three Fantasy read endpoints return HTTP 403, including after a successful token refresh with explicit read scope. One fresh explicit-scope browser consent is prepared as a bounded diagnostic. Successful live reads, league/team reconciliation and normalization into a complete GM snapshot remain pending. No Yahoo scraping or writes. See [connection guide](guides/yahoo-connection.md). |
 
 Acceptance: reconcile an isolated snapshot with its source; exercise wrong team,
 duplicate identity, unknown rule, expired authentication, interrupted/partial
@@ -279,7 +279,7 @@ usage, waiver priority or Yahoo connection.
    the recommendation incident using isolated evidence before reusing the affected
    workflow; do not invent a cause if evidence is insufficient.
 2. Yahoo read-only approval was reported by the user on September 16. The September
-   24 OAuth setup awaits user consent and a real API read. League reconciliation
+   24 OAuth consent succeeded; actual Fantasy reads return HTTP 403. League reconciliation
    and complete snapshot integration remain required; connected everyday readiness
    is explicitly undelivered.
 3. Selected-offer trade evaluation follows 2.0, with automatic trade discovery

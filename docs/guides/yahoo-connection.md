@@ -56,6 +56,34 @@ not attached to this Client ID; successful OAuth alone does not prove API access
 
 ## Delivery boundary and evidence
 
+### Bounded authorization diagnostic
+
+On September 24, actual OAuth consent succeeded and saved tokens for the configured
+app. Hockey-team discovery, `/game/nhl`, and `/users;use_login=1` each returned HTTP
+403 with "This application is not authorized to perform this action." The user
+confirmed Fantasy Sports Read is enabled in My Apps. A fresh token request with
+`scope=fspt-r` succeeded and saved replacement tokens, but the team read still
+returned 403. This does not establish the token's granted scope or the precise
+server-side cause.
+
+One explicit-scope browser consent can distinguish a missing consent scope from
+continued API rejection:
+
+```bash
+uv run fantasy yahoo login --explicit-read-scope
+```
+
+This requests `fspt-r` and `prompt=consent`; it never requests write access. The
+observable check is a successful hockey-team GET after consent. If Yahoo returns
+`invalid_scope` or the same 403, stop repeating authentication and reconcile the
+approval/activation steps and Client ID with Yahoo. This is a diagnostic option,
+not a verified fix. Existing supplied snapshots remain usable with their dated
+coverage limits while connected refresh is unavailable.
+
+The original 403 and explicit-scope retry are also described in a
+[firsthand YFPY issue report](https://github.com/uberfastman/yfpy/issues/84);
+another app's result does not prove this app's cause.
+
 PRD P1-FR5 remains WIP until a real read and league/team reconciliation succeed and
 the supported provider produces complete validated GM input. No connected-release
 claim follows from unit tests. `tests/test_yahoo_connection.py` verifies private

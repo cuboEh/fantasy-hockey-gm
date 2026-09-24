@@ -51,11 +51,14 @@ class Credentials:
             raise ValueError('Use https://localhost:PORT/oauth/callback as the registered redirect URI')
         return result
 
-    def authorization_url(self, state):
-        return AUTH_URL + '?' + urlencode({
+    def authorization_url(self, state, *, explicit_read_scope=False):
+        parameters = {
             'client_id': self.client_id, 'redirect_uri': self.redirect_uri,
             'response_type': 'code', 'state': state,
-        })
+        }
+        if explicit_read_scope:
+            parameters.update(scope='fspt-r', prompt='consent')
+        return AUTH_URL + '?' + urlencode(parameters)
 
 
 def private_json(path, payload):

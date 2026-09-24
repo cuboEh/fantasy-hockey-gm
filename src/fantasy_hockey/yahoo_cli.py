@@ -18,6 +18,8 @@ def register(commands):
     parser = commands.add_parser('yahoo', help='Connect to Yahoo with read-only API access')
     parser.add_argument('action', choices=('login', 'check'))
     parser.add_argument('--env', type=Path, default=Path('.env'))
+    parser.add_argument('--explicit-read-scope', action='store_true',
+                        help='Diagnostic login: request Fantasy read scope and fresh consent')
 
 
 def callback_handler(credentials, state, outcome, finished):
@@ -70,7 +72,7 @@ def callback_handler(credentials, state, outcome, finished):
     return Handler
 
 
-def login(client):
+def login(client, *, explicit_read_scope=False):
     credentials = client.credentials
     parsed = urlsplit(credentials.redirect_uri)
     PRIVATE.mkdir(parents=True, exist_ok=True, mode=0o700)
@@ -103,7 +105,7 @@ def login(client):
             print(f'First open https://{parsed.netloc}/ in your browser.')
             print('The temporary local certificate is self-signed. Allow it only for this localhost page.')
             print('Then open this Yahoo consent link and approve Fantasy Sports read access:')
-            print(credentials.authorization_url(state), flush=True)
+            print(credentials.authorization_url(state, explicit_read_scope=explicit_read_scope), flush=True)
             if not finished.wait(600):
                 raise ValueError('Yahoo login timed out after 10 minutes; run login again')
         finally:
@@ -116,10 +118,12 @@ def login(client):
 
 
 def handle(args):
+    if args.explicit_read_scope and args.action != 'login':
+        raise ValueError('--explicit-read-scope is only valid with yahoo login')
     client = Client(Credentials.load(args.env), PRIVATE / 'tokens.json')
     try:
         if args.action == 'login':
-            login(client)
+            login(client, explicit_read_scope=args.explicit_read_scope)
         payload = client.read_teams()
         private_json(PRIVATE / 'teams.json', {
             'source': 'Yahoo Fantasy Sports API',
