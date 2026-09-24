@@ -2,7 +2,7 @@
 
 Active increment: [PRD 2.0](PRD-2.0.md), the daily and weekly GM assistant with
 model development and research. Supplied-data implementation is verified; connected
-Yahoo reads remain blocked. Participation-data reconciliation and the paired
+Yahoo reads await user OAuth consent and league reconciliation. Participation-data reconciliation and the paired
 daily/seven-day forecast evaluation are delivered with their limits recorded. See the
 [GM workspace guide](guides/gm-workspace.md) for delivered behavior and limits.
 The completed draft releases are [PRD 1.1](archive/PRD-1.1.md) and
@@ -23,6 +23,7 @@ Current command and dashboard guidance. Source dates and model limitations still
 
 - [MVP 1 draft companion](guides/draft-day.md)
 - [GM league-state preview](guides/gm-workspace.md)
+- [Yahoo read-only connection](guides/yahoo-connection.md)
 - [Pick now versus wait](guides/pick-comparison.md)
 - [Yahoo value-versus-market comparison](guides/yahoo-market-comparison.md)
 

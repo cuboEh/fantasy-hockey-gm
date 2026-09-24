@@ -37,11 +37,14 @@ def main() -> int:
     goalie_weeks_cli.register(commands)
     decision_cli.register(commands)
     market.register(commands)
-    from . import dashboard, gm_cli
+    from . import dashboard, gm_cli, yahoo_cli
     dashboard.register(commands)
     gm_cli.register(commands)
+    yahoo_cli.register(commands)
     args = parser.parse_args()
     try:
+        if args.command == 'yahoo':
+            return yahoo_cli.handle(args)
         if args.command == 'gm':
             return gm_cli.handle(args)
         if args.command == 'dashboard':
